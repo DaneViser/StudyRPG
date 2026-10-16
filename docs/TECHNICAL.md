@@ -42,7 +42,7 @@ src/
     useGame.ts        Hook: reducer + persistence + ticking clock (+ dev speed) + completion side effects
     dev.ts            DevOp union + devReducer(): pure cheat transforms (grant, warp, simulate, …)
   components/
-    Hud.tsx           Name, level/title, XP bar, gold, streak
+    Hud.tsx           Name, level/title, XP bar, gold, souls, streak
     QuestScreen.tsx   Battle, Camp (rest), SiegePanel, timer panel, DurationPicker, Controls, SubjectPicker
     Siege.tsx         SiegeScene (army, projectiles, keep) used by Quest and Army screens
     ArmyScreen.tsx    Siege stats, recruit list, War Council
@@ -88,7 +88,7 @@ vite.config.ts        React plugin, `base: './'` (relative asset paths)
 
 ### 3.2 Idle siege model
 - Siege progress is a **pure function of focused minutes**: `simulateIdle(idle, minutes) → { idle, loot }` (`idle.ts`).
-- **During a quest** the UI calls it with elapsed minutes `(durationMs - remainingMs) / 60000` to animate live progress; nothing is written to state.
+- **During a quest** the UI calls it with elapsed minutes `(durationMs - remainingMs) / 60000` to animate live progress; nothing is written to state. `SiegeScene` draws the previewed army/keep but takes `banked` (= `state.idle.souls`) separately, so the souls counter never shows unpaid souls.
 - **On `complete`** the reducer calls it with the full duration and commits the result plus keep loot (gold/XP into the hero).
 - Recruiting and upgrades are rejected while `siegeLocked(state)` (focus phase not idle), so the army used for the live preview equals the army used at payout.
 - Souls are stored as floats; display uses `formatNum` (floors, K/M/B/T suffixes).

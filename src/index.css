@@ -1058,6 +1058,29 @@ input[type='number'] {
   color: #c890ff;
 }
 
+.soul-stat {
+  color: #c890ff;
+}
+
+.wallet {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -4px -4px 14px;
+  padding: 8px 10px;
+  background: var(--ink);
+  border: 3px solid #5a2a9a;
+}
+
+.wallet-amount {
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  color: #c890ff;
+}
+
 /* ---------- Hero / shop / log / config ---------- */
 
 .hero-layout,

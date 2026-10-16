@@ -29,6 +29,8 @@ Nothing needs clicking while studying. The game is designed to run in the backgr
 | **Log** | Time per subject (Bestiary) and recent completed sessions (Adventure Log). Delete subjects here. |
 | **Config** | Hero name, timer lengths, options, save export/import, New Game. |
 
+The **HUD** (top bar) shows hero name, level and title, the XP bar, **gold**, **souls** (current, spendable) and the daily streak.
+
 A red dot on the Quest tab means a quest is running while you're on another tab. The browser tab title shows the countdown (e.g. `24:58 Quest - StudyRPG`).
 
 ---
@@ -129,7 +131,8 @@ Three slots. Weapons boost XP, armour boosts gold, relics boost both. Bought ite
 Your army raids demon keeps, **but only while you are in a running quest**. Paused, resting or idle means no progress. No clicking is ever needed.
 
 - **Souls:** troops produce souls per study minute. The same amount is dealt as damage to the current keep.
-- **Live view:** during a quest the siege scene animates (marching troops, arrows/fireballs/boulders, a burning keep) and shows souls gained "this quest" and keeps razed so far.
+- **Where to see your souls:** the HUD, the "souls available" box at the top of the Army tab's recruit list, and the siege scene's footer. The Army stats also show souls earned all time.
+- **Live view:** during a quest the siege scene animates (marching troops, arrows/fireballs/boulders, a burning keep). It shows your banked souls, plus the souls and keeps gathered so far as "pending (paid on victory)".
 - **Payout:** souls and keep loot are delivered **when the quest is won**. Fleeing forfeits them.
 - **Army is locked mid-quest:** recruiting and upgrades are only available between quests.
 - **Start:** 1 Squire, 0 souls, keep level 1.

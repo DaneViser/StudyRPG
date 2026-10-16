@@ -96,6 +96,12 @@ export function XpIcon({ scale = 3 }: { scale?: number }) {
   return <PixelSprite grid={STAR} palette={{ o: '#1a6a3a', y: '#78f0a0' }} scale={scale} className="icon" />
 }
 
+const SOUL = ['..o..', '.oho.', 'ohppo', 'opppo', '.opo.', '..o..']
+
+export function SoulIcon({ scale = 3 }: { scale?: number }) {
+  return <PixelSprite grid={SOUL} palette={{ o: '#3a1868', p: '#b070ff', h: '#f0d8ff' }} scale={scale} className="icon" />
+}
+
 const FLAME = ['..o..', '.oro.', 'oryro', 'oryro', '.ooo.']
 
 export function FlameIcon({ scale = 3 }: { scale?: number }) {

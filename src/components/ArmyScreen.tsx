@@ -4,7 +4,7 @@ import { siegeLocked, type Action } from '../game/reducer'
 import { sfx } from '../game/sound'
 import type { GameState } from '../game/types'
 import { SiegeScene } from './Siege'
-import { UnitSprite } from './Sprites'
+import { SoulIcon, UnitSprite } from './Sprites'
 
 export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Dispatch<Action> }) {
   const { idle } = state
@@ -24,7 +24,7 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
         <p className="hint">
           Your army raids demon keeps <b>only while you study</b>. Souls and keep loot are delivered when you win a quest; fleeing forfeits them.
         </p>
-        <SiegeScene idle={idle} active={false} />
+        <SiegeScene idle={idle} banked={idle.souls} active={false} />
         <dl className="stat-table siege-stats">
           <dt>Keep HP</dt>
           <dd>
@@ -38,12 +38,17 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
           <dd>{idle.keepLevel - 1}</dd>
           <dt>Souls per study min</dt>
           <dd>{formatNum(soulsPerMinute(idle))}</dd>
-          <dt>Total souls</dt>
+          <dt>Souls earned (all time)</dt>
           <dd>{formatNum(idle.totalSouls)}</dd>
         </dl>
       </section>
 
       <section className="panel">
+        <div className="wallet">
+          <SoulIcon scale={4} />
+          <span className="wallet-amount">{formatNum(idle.souls)}</span>
+          <span className="muted">souls available</span>
+        </div>
         <h2 className="panel-title">Recruit</h2>
         {locked && <p className="msg">The quartermaster is at the front. Recruit between quests.</p>}
         <ul className="shop-list">
@@ -55,7 +60,9 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
                   <span className="unit-icon">?</span>
                   <div className="shop-info">
                     <span className="item-name">???</span>
-                    <span className="item-desc">Recruit a {UNITS[i - 1].name} to reveal.</span>
+                    <span className="item-desc">
+                      Recruit {/^[AEIOU]/.test(UNITS[i - 1].name) ? 'an' : 'a'} {UNITS[i - 1].name} to reveal.
+                    </span>
                   </div>
                 </li>
               )
@@ -73,7 +80,8 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
                   <span className="item-desc">{u.description}</span>
                   <span className="item-bonus">+{formatNum(unitRate(idle, u))} souls/min each</span>
                 </div>
-                <span className="price soul-price">◆ {formatNum(cost)}</span>
+                <span className="price soul-price">
+                  <SoulIcon scale={2} /> {formatNum(cost)}</span>
                 <button className="btn btn-small" disabled={locked || idle.souls < cost} onClick={() => buy({ type: 'recruit', unitId: u.id })}>
                   Recruit
                 </button>
@@ -92,7 +100,8 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
                 <span className="item-name">{u.name}</span>
                 <span className="item-bonus">{u.description}</span>
               </div>
-              <span className="price soul-price">◆ {formatNum(u.cost)}</span>
+              <span className="price soul-price">
+                  <SoulIcon scale={2} /> {formatNum(u.cost)}</span>
               <button className="btn btn-small" disabled={locked || idle.souls < u.cost} onClick={() => buy({ type: 'buyUpgrade', upgradeId: u.id })}>
                 Buy
               </button>

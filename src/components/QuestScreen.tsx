@@ -161,7 +161,7 @@ function SiegePanel({ state, remainingMs }: { state: GameState; remainingMs: num
   return (
     <section className="panel siege-panel">
       <h2 className="panel-title">The Siege</h2>
-      <SiegeScene idle={live?.idle ?? state.idle} pending={live?.loot} active={timer.status === 'running' && questing} />
+      <SiegeScene idle={live?.idle ?? state.idle} pending={live?.loot} banked={state.idle.souls} active={timer.status === 'running' && questing} />
     </section>
   )
 }

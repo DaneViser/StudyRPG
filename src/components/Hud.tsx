@@ -1,6 +1,7 @@
+import { formatNum } from '../game/idle'
 import { liveStreak, streakBonus, titleFor, xpToNext, percent } from '../game/logic'
 import type { GameState } from '../game/types'
-import { CoinIcon, FlameIcon, XpIcon } from './Sprites'
+import { CoinIcon, FlameIcon, SoulIcon, XpIcon } from './Sprites'
 
 export function Hud({ state, now }: { state: GameState; now: number }) {
   const { hero } = state
@@ -25,6 +26,9 @@ export function Hud({ state, now }: { state: GameState; now: number }) {
       <div className="hud-stats">
         <span className="stat" title="Gold">
           <CoinIcon /> {hero.gold}
+        </span>
+        <span className="stat soul-stat" title="Souls: spend them on troops and upgrades in the Army tab">
+          <SoulIcon /> {formatNum(state.idle.souls)}
         </span>
         <span className="stat" title={`Daily streak: +${percent(streakBonus(streak))} XP`}>
           <FlameIcon /> {streak}d

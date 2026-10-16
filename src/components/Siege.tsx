@@ -1,6 +1,6 @@
 import { formatNum, keepHp, keepName, soulsPerMinute, UNITS } from '../game/idle'
 import type { IdleState, SiegeLoot } from '../game/types'
-import { KeepSprite, UnitSprite } from './Sprites'
+import { KeepSprite, SoulIcon, UnitSprite } from './Sprites'
 
 const MAX_PER_TYPE = 3
 const SHOT_KIND: Record<string, string> = { archer: 'arrow', mage: 'fireball', dragon: 'fireball', golem: 'boulder' }
@@ -10,10 +10,12 @@ interface Props {
   idle: IdleState
   /** Loot gathered so far this quest, if a quest is in progress */
   pending?: SiegeLoot
+  /** Souls you actually own right now (not counting this quest's pending souls) */
+  banked: number
   active: boolean
 }
 
-export function SiegeScene({ idle, pending, active }: Props) {
+export function SiegeScene({ idle, pending, active, banked }: Props) {
   const hp = keepHp(idle.keepLevel)
   const hpLeft = Math.max(0, 1 - idle.keepDamage / hp)
   const troops = UNITS.filter((u) => (idle.units[u.id] ?? 0) > 0)
@@ -60,12 +62,12 @@ export function SiegeScene({ idle, pending, active }: Props) {
 
       <div className="siege-footer">
         <span>
-          <span className="soul">◆</span> {formatNum(idle.souls)} souls
+          <SoulIcon /> {formatNum(banked)} souls
         </span>
         <span className="muted">{formatNum(rate)}/min while studying</span>
         {pending && (
           <span className="pending">
-            +{formatNum(pending.souls)} this quest{pending.keeps > 0 && ` · ${pending.keeps} keep${pending.keeps > 1 ? 's' : ''} razed!`}
+            +{formatNum(pending.souls)} pending (paid on victory){pending.keeps > 0 && ` · ${pending.keeps} keep${pending.keeps > 1 ? 's' : ''} razed!`}
           </span>
         )}
         {!active && !pending && <span className="muted">Your army waits for you to study…</span>}
