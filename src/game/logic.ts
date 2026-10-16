@@ -25,14 +25,16 @@ export function titleFor(level: number): string {
 export function gearBonuses(equipped: GameState['equipped']) {
   let xp = 0
   let gold = 0
+  let siege = 0
   for (const id of Object.values(equipped)) {
     const item = id ? ITEM_BY_ID[id] : undefined
     if (item) {
       xp += item.xpBonus
       gold += item.goldBonus
+      siege += item.siegeBonus
     }
   }
-  return { xp, gold }
+  return { xp, gold, siege }
 }
 
 export function streakBonus(streak: number): number {
@@ -120,6 +122,7 @@ export function bonusText(item: Item): string {
   const parts = []
   if (item.xpBonus) parts.push(`+${percent(item.xpBonus)} XP`)
   if (item.goldBonus) parts.push(`+${percent(item.goldBonus)} Gold`)
+  if (item.siegeBonus) parts.push(`+${percent(item.siegeBonus)} Siege`)
   return parts.join('  ')
 }
 

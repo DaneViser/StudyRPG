@@ -526,6 +526,7 @@ input[type='number'] {
 
 .battle {
   position: relative;
+  container-type: inline-size;
   height: 260px;
   margin: 0 auto 10px;
   background:
@@ -606,10 +607,6 @@ input[type='number'] {
   transform-origin: bottom center;
 }
 
-.fighting .monster {
-  animation: menace 0.9s steps(2) infinite;
-}
-
 .fighting .flying .monster {
   animation: flap 0.5s steps(2) infinite;
 }
@@ -630,12 +627,6 @@ input[type='number'] {
 
 .fighting.menace-2 {
   animation: quake 3s steps(1) infinite;
-}
-
-@keyframes menace {
-  50% {
-    transform: scale(1.04, 0.96);
-  }
 }
 
 @keyframes flap {
@@ -667,12 +658,10 @@ input[type='number'] {
   bottom: 18%;
 }
 
-.fighting .hero-sprite {
-  animation: attack 0.9s steps(3) infinite;
-}
 
 .paused .hero-sprite,
-.paused .monster {
+.paused .monster,
+.paused .monster-body {
   animation: none;
   filter: grayscale(0.7);
 }
@@ -680,15 +669,6 @@ input[type='number'] {
 @keyframes bob {
   50% {
     transform: translateY(-4px);
-  }
-}
-
-@keyframes attack {
-  33% {
-    transform: translateX(12px);
-  }
-  66% {
-    transform: translateX(4px) translateY(-4px);
   }
 }
 
@@ -801,6 +781,310 @@ input[type='number'] {
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* ---------- Combat loop (2.4 s): hero strikes at ~20%, the foe answers at ~70% ---------- */
+
+.hero-wrap.mythic svg {
+  filter: drop-shadow(0 0 3px var(--aura)) drop-shadow(0 0 10px var(--aura));
+}
+
+.monster-body {
+  transform-origin: bottom center;
+}
+
+.fighting .hero-sprite {
+  animation: hero-fight 2.4s steps(24) infinite;
+}
+
+.fighting .fight-slime {
+  animation: fight-slime 2.4s steps(24) infinite;
+}
+
+.fighting .fight-bat {
+  animation: fight-bat 2.4s steps(24) infinite;
+}
+
+.fighting .fight-skeleton {
+  animation: fight-skeleton 2.4s steps(24) infinite;
+}
+
+.fighting .fight-gargoyle {
+  animation: fight-gargoyle 2.4s steps(24) infinite;
+}
+
+.fighting .fight-demon {
+  animation: fight-demon 2.4s steps(24) infinite;
+}
+
+@keyframes hero-fight {
+  0%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  8% {
+    transform: translateX(8cqw);
+  }
+  16% {
+    transform: translate(19cqw, -6px);
+  }
+  22% {
+    transform: translateX(20cqw) rotate(6deg);
+  }
+  30%,
+  66% {
+    transform: none;
+    filter: none;
+  }
+  70% {
+    transform: translateX(-10px);
+    filter: brightness(2.4) saturate(0.3);
+  }
+  74% {
+    transform: translateX(-10px);
+    filter: none;
+  }
+  78% {
+    transform: translateX(-6px);
+    filter: brightness(2.4) saturate(0.3);
+  }
+  84% {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Shared "hit" frames: knocked back and flashing white when the hero strikes */
+@keyframes fight-slime {
+  0%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  20% {
+    transform: translateX(8px) scale(1.1, 0.9);
+    filter: brightness(3);
+  }
+  26% {
+    transform: none;
+    filter: none;
+  }
+  48% {
+    transform: scale(1.25, 0.75);
+  }
+  58% {
+    transform: translate(-12cqw, -50px) scale(0.85, 1.15);
+  }
+  68% {
+    transform: translate(-22cqw, 0) scale(1.35, 0.7);
+  }
+  76% {
+    transform: translate(-21cqw, 0);
+  }
+  88% {
+    transform: translate(-7cqw, -20px);
+  }
+}
+
+@keyframes fight-bat {
+  0%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  20% {
+    transform: translateX(10px);
+    filter: brightness(3);
+  }
+  26% {
+    transform: none;
+    filter: none;
+  }
+  50% {
+    transform: translateY(-24px);
+  }
+  64% {
+    transform: translate(-31cqw, 70px);
+  }
+  72% {
+    transform: translate(-30cqw, 62px);
+  }
+  86% {
+    transform: translate(-4cqw, -10px);
+  }
+}
+
+@keyframes fight-skeleton {
+  0%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  20% {
+    transform: translateX(10px) rotate(4deg);
+    filter: brightness(3);
+  }
+  26% {
+    transform: none;
+    filter: none;
+  }
+  48% {
+    transform: translateX(6px) rotate(6deg);
+  }
+  60% {
+    transform: translateX(-18cqw) rotate(-10deg);
+  }
+  68% {
+    transform: translateX(-22cqw) rotate(-14deg);
+  }
+  76% {
+    transform: translateX(-21cqw) rotate(4deg);
+  }
+  88% {
+    transform: translateX(-4cqw);
+  }
+}
+
+@keyframes fight-gargoyle {
+  0%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  20% {
+    transform: translateX(10px);
+    filter: brightness(3);
+  }
+  26% {
+    transform: none;
+    filter: none;
+  }
+  48% {
+    transform: translateY(-30px) scale(1.05);
+  }
+  62% {
+    transform: translate(-29cqw, 50px) scale(1.1);
+  }
+  70% {
+    transform: translate(-28cqw, 46px) scale(1.1);
+  }
+  86% {
+    transform: translate(-3cqw, -10px);
+  }
+}
+
+@keyframes fight-demon {
+  0%,
+  100% {
+    transform: none;
+    filter: none;
+  }
+  20% {
+    transform: translateX(10px);
+    filter: brightness(3);
+  }
+  26%,
+  44% {
+    transform: none;
+    filter: none;
+  }
+  50% {
+    transform: translateY(-16px) scale(1.04);
+  }
+  56% {
+    transform: scale(1.08, 0.92);
+  }
+  62% {
+    transform: none;
+  }
+}
+
+.slash,
+.fireball {
+  display: none;
+  pointer-events: none;
+}
+
+.fighting .slash {
+  display: block;
+  position: absolute;
+  left: -18px;
+  top: 25%;
+  width: 60px;
+  height: 60px;
+  border: 6px solid transparent;
+  border-top-color: #ffffff;
+  border-right-color: #ffffff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: slash 2.4s steps(24) infinite;
+}
+
+@keyframes slash {
+  0%,
+  16% {
+    opacity: 0;
+    transform: rotate(-40deg) scale(0.6);
+  }
+  18% {
+    opacity: 1;
+    transform: rotate(-10deg) scale(0.9);
+  }
+  24% {
+    opacity: 1;
+    transform: rotate(60deg) scale(1.1);
+  }
+  26%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.fighting .fireball {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  bottom: 42%;
+  right: 24%;
+  width: 16px;
+  height: 16px;
+  background: #ffd040;
+  box-shadow:
+    0 0 0 4px #ff6020,
+    0 0 14px 4px rgba(255, 60, 0, 0.7);
+  opacity: 0;
+  animation: fireball 2.4s steps(24) infinite;
+}
+
+.fighting .fireball.big {
+  width: 24px;
+  height: 24px;
+  background: #e080ff;
+  box-shadow:
+    0 0 0 5px #8020c0,
+    0 0 18px 6px rgba(160, 40, 255, 0.7);
+}
+
+@keyframes fireball {
+  0%,
+  55% {
+    opacity: 0;
+    right: 24%;
+  }
+  56% {
+    opacity: 1;
+    right: 24%;
+  }
+  69% {
+    opacity: 1;
+    right: 72%;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    right: 72%;
+  }
 }
 
 /* ---------- Siege (idle) ---------- */
@@ -1182,8 +1466,36 @@ input[type='number'] {
   text-align: center;
 }
 
-.shop-group + .shop-group {
-  margin-top: 18px;
+.shop-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.shop-item.mythic {
+  background: linear-gradient(90deg, rgba(200, 120, 255, 0.12), transparent 70%);
+}
+
+.shop-item.mythic:not(.locked) .item-name {
+  color: #e0b8ff;
+  text-shadow: 0 0 6px rgba(200, 120, 255, 0.8);
+}
+
+.mythic-tag {
+  margin-left: 8px;
+  padding: 1px 4px;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--ink);
+  background: #d8b8ff;
+  vertical-align: middle;
+}
+
+.rank-badge {
+  font-size: 12px;
+  color: #c890ff;
+  border: 3px solid #5a2a9a;
+  height: 34px;
 }
 
 .shop-heading {
@@ -1637,7 +1949,7 @@ input[type='number'] {
   }
 
   .battle .hero-sprite {
-    bottom: 14%;
+    bottom: 10%;
   }
 
   .siege {

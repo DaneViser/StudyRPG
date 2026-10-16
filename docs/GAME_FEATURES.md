@@ -77,6 +77,13 @@ Longer sessions summon tougher, bigger foes, capped at the Archdemon.
 | 120+ min | **Archdemon** (BOSS) | ★★★★★★ | largest, dark palette, red aura, screen quake, dark stage |
 
 - Name shown as `<Subject> <Foe>`, e.g. "Calculus Skeleton".
+- **Combat animation** (while the timer runs, a 2.4 s loop): the hero lunges and slashes (white arc, the foe flashes and is knocked back), then the foe answers and the hero flashes as it's hit. Each foe fights differently:
+  - **Slime:** squashes, hops and splats onto the hero.
+  - **Bat:** rises, then swoops down at the hero.
+  - **Skeleton:** winds up and lunges with a sword swing.
+  - **Gargoyle:** hovers, then dives with its wings spread.
+  - **Demon Lord / Archdemon:** stomps and hurls a fireball (the Archdemon's is bigger and purple), on top of the boss quake.
+  Animations pause with the timer and respect "reduce motion".
 - Monster HP = **10 × minutes** (display only; it drains with the timer).
 - Monster type is cosmetic: rewards depend only on minutes studied (and bonuses).
 
@@ -86,17 +93,17 @@ Longer sessions summon tougher, bigger foes, capped at the Archdemon.
 
 ### Per completed quest
 - **XP = minutes × 4 × (1 + XP bonuses)**
-- **Gold = minutes × 1 × (1 + gold bonuses)**
+- **Gold = minutes × 3 × (1 + gold bonuses)**
 - Plus siege loot (see §8).
 - The Quest screen previews the loot before you start.
 
 ### Bonuses
-- **Gear** (§7) and **War Council hero upgrades** (§8) add XP%/gold%.
+- **Gear** (§7), **War Council hero upgrades** and **Boons** (§8) add XP%/gold%. All bonuses add together (e.g. +50% gear + 20% boons = +70%).
 - **Daily streak:** study on consecutive days. Day 1 = +0%, each further day +5% XP, max **+25%** (day 6+). Missing a day resets it. Shown as 🔥 in the HUD.
 
 ### Levels
 - XP needed for the next level = **floor(100 × level^1.5)** (Lv1→2: 100, 2→3: 282, 3→4: 519, 4→5: 800 …).
-- Each level-up grants **20 × new level** bonus gold.
+- Each level-up grants **40 × new level** bonus gold.
 - Titles: Lv1 Novice · Lv3 Squire · Lv5 Apprentice · Lv8 Knight · Lv12 Night Hunter · Lv16 Archmage · Lv20 Legend.
 
 ### Victory dialog
@@ -106,23 +113,39 @@ Shows XP, gold, streak bonus, siege report (souls, keeps razed with their loot) 
 
 ## 7. Gear (Shop, paid in gold)
 
-Three slots. Weapons boost XP, armour boosts gold, relics boost both. Bought items are equipped immediately; owned items can be swapped on the Hero tab. Items above your level show as `??? (LV n)`. Gear changes the hero's sprite colours.
+Three slots, browsed with the Shop's Weapons / Armors / Relics tabs. **Weapons boost XP, armor boosts gold, relics boost both, and every item above wood also strengthens the siege army** (+% army power, i.e. more souls and keep damage). Bought items are equipped immediately; owned items can be swapped on the Hero tab. Items above your level show as `??? (LV n)`.
 
-| Slot | Item | Price | Min Lv | Bonus |
+Gear changes the hero's look: armor colours the suit (with computed light/shade), the weapon colours the blade, the relic colours the belt gem. A **mythic relic** also recolours the cape and plume, and **any mythic item makes the hero glow** in that item's colour.
+
+### Material ranks
+Each rank has a Sword (weapon), Armor and Amulet (relic) at the same price and level.
+
+| Rank | Min Lv | Price (each) | Sword: XP | Armor: gold | Amulet: XP + gold | Siege (each) |
+|---|---|---|---|---|---|---|
+| Wooden | 1 | 60 | +3% | +3% | +2% / +2% | +0% |
+| Stone | 3 | 200 | +6% | +6% | +3% / +3% | +2% |
+| Copper | 5 | 500 | +10% | +10% | +5% / +5% | +4% |
+| Iron | 7 | 1,200 | +15% | +15% | +8% / +8% | +6% |
+| Silver | 10 | 2,500 | +21% | +21% | +11% / +11% | +9% |
+| Golden | 13 | 5,000 | +28% | +28% | +14% / +14% | +12% |
+| Platinum | 16 | 9,000 | +36% | +36% | +18% / +18% | +16% |
+| Diamond | 18 | 15,000 | +45% | +45% | +23% / +23% | +20% |
+
+A full diamond set gives +68% XP, +68% gold and +60% siege.
+
+### Mythic items
+Each has a different hero-vs-siege trade-off.
+
+| Slot | Item | Min Lv | Price | Bonus |
 |---|---|---|---|---|
-| Weapon | Rusty Dagger | 50 | 1 | +5% XP |
-| Weapon | Iron Sword | 150 | 3 | +10% XP |
-| Weapon | Silver Rapier | 400 | 6 | +15% XP |
-| Weapon | Moonlit Whip | 1000 | 10 | +25% XP |
-| Weapon | Blade of Sages | 2400 | 15 | +40% XP, +5% gold |
-| Armor | Leather Vest | 60 | 1 | +5% gold |
-| Armor | Chain Mail | 180 | 4 | +10% gold |
-| Armor | Knight Plate | 500 | 8 | +5% XP, +15% gold |
-| Armor | Gothic Aegis | 1200 | 12 | +5% XP, +25% gold |
-| Relic | Candle Charm | 80 | 2 | +3% XP, +3% gold |
-| Relic | Owl Amulet | 250 | 5 | +10% XP |
-| Relic | Hourglass Ring | 600 | 9 | +10% XP, +10% gold |
-| Relic | Crown of Focus | 1500 | 14 | +20% XP, +20% gold |
+| Weapon | Elderwood Bow | 20 | 28,000 | +50% XP, +35% siege |
+| Weapon | Phoenix Blade | 24 | 45,000 | +65% XP, +5% gold, +25% siege |
+| Armor | Icecrystal Mail | 20 | 28,000 | +50% gold, +35% siege |
+| Armor | Dragonscale Plate | 24 | 45,000 | +5% XP, +65% gold, +25% siege |
+| Relic | Phoenix Feather | 22 | 36,000 | +25% XP, +25% gold, +30% siege |
+| Relic | Starfall Crown | 26 | 55,000 | +30% XP, +30% gold, +45% siege |
+
+Saves from before this catalogue keep their gear: old items are converted to the closest material rank (e.g. Rusty Dagger → Wooden Sword, Gothic Aegis → Iron Armor, Crown of Focus → Iron Amulet).
 
 ---
 
@@ -131,6 +154,7 @@ Three slots. Weapons boost XP, armour boosts gold, relics boost both. Bought ite
 Your army raids demon keeps, **but only while you are in a running quest**. Paused, resting or idle means no progress. No clicking is ever needed.
 
 - **Souls:** troops produce souls per study minute. The same amount is dealt as damage to the current keep.
+- **Army power** multiplies all troops: War Council army upgrades × Siege Engineers boon × **(1 + the hero's gear siege bonus)**. The Army tab shows the total and the part that comes from gear.
 - **Where to see your souls:** the HUD, the "souls available" box at the top of the Army tab's recruit list, and the siege scene's footer. The Army stats also show souls earned all time.
 - **Live view:** during a quest the siege scene animates (marching troops, arrows/fireballs/boulders, a burning keep). It shows your banked souls, plus the souls and keeps gathered so far as "pending (paid on victory)".
 - **Payout:** souls and keep loot are delivered **when the quest is won**. Fleeing forfeits them.
@@ -151,7 +175,7 @@ Cost grows **×1.15** per troop owned of that type. A troop type is revealed aft
 
 ### Demon keeps
 - Keep HP = **200 × 1.8^(level − 1)** (200, 360, 648, 1,166 …).
-- Razing a keep gives **25 × level gold** and **30 × level XP** (× loot multiplier), then the next, stronger keep appears.
+- Razing a keep gives **50 × level gold** and **30 × level XP** (× loot multipliers), then the next, stronger keep appears.
 - Names cycle: Imp Outpost, Ghoul Barracks, Bone Tower, Cursed Abbey, Wraith Citadel, Blood Fortress, Infernal Spire, Dread Castle.
 - Several keeps can fall in one long quest.
 
@@ -171,6 +195,35 @@ Cost grows **×1.15** per troop owned of that type. A troop type is revealed aft
 | Scholar's Blessing | 80,000 | Hero +10% XP and gold | Keep level 8 |
 | Runic Cores | 120,000 | Siege Golems ×2 | 5 Siege Golems |
 | Dragon Pact | 600,000 | Dragon Riders ×2 | 5 Dragon Riders |
+| Merchant Guild | 12,000 | Hero +10% gold from quests | Keep level 5 |
+| Sage's Library | 12,000 | Hero +10% XP from quests | Keep level 5 |
+| Lords of Plunder | 250,000 | Keep loot ×2 | Keep level 10 |
+| Golden Age | 1,500,000 | Hero +15% gold from quests | Keep level 12 |
+| Enlightenment | 1,500,000 | Hero +15% XP from quests | Keep level 12 |
+
+The list is shown cheapest first.
+
+### Boons (repeatable, paid in souls)
+Each rank adds the same bonus; the next rank costs **growth ×** the previous one, up to a cap. Locked boons show what unlocks them.
+
+| Boon | Per rank | Max ranks | First rank | Growth | Unlocks at |
+|---|---|---|---|---|---|
+| Royal Treasury | Hero +2% gold | 20 (+40%) | 2,000 | ×1.9 | Keep level 4 |
+| Grand Academy | Hero +2% XP | 20 (+40%) | 2,000 | ×1.9 | Keep level 4 |
+| Siege Engineers | Army +5% | 20 (+100%) | 1,500 | ×1.8 | 25 troops |
+
+Rank costs climb fast (the 11th Treasury rank costs ≈ 1.2M souls, the 20th ≈ 400M), so boons are a long-term soul sink.
+
+### Balance overview (maximum possible hero bonuses)
+| Source | XP | Gold |
+|---|---|---|
+| Best gear (Phoenix Blade + Dragonscale Plate + Starfall Crown) | +100% | +100% |
+| War Council (one-time) | +40% | +40% |
+| Boons (max) | +40% | +40% |
+| Daily streak | +25% | — |
+| **Total** | **+205%** (≈3× base) | **+180%** |
+
+These maximums take months of study; early game sits around +10–30%.
 
 ---
 
@@ -194,7 +247,7 @@ A debug console for testing and previewing late-game content without waiting. No
 |---|---|
 | Time | **Clock speed** ×1 / ×10 / ×60 / ×300 / ×1000 for running quests and rests (the siege speeds up too). **Skip ahead** +1 / +5 / +15 min, **Finish now**. **Simulate study** 25m / 1h / 4h / 1 day / 1 week: an instant win paid out by the normal rules (rewards, siege, Victory dialog), using the selected subject. |
 | Hero | Gold +100 / +1K / +10K / +1M · XP +100 / +1K / +10K / +100K (normal level-ups) · set level 1–99 · streak 0 / 3 / 6 days · **All gear** into inventory. |
-| Siege | Souls +1K / +100K / +10M / +1B · +1 / +10 / +100 of every troop · **All upgrades** · **Raze** 1 / 10 keeps (loot paid). |
+| Siege | Souls +1K / +100K / +10M / +1B · +1 / +10 / +100 of every troop · **All upgrades** (also maxes every boon) · **Raze** 1 / 10 keeps (loot paid). |
 | Snapshot | **Save** the whole game state, **Restore** it later to undo experiments (one slot, stored in this browser). |
 
 Dev tool changes are real changes to your save. Take a snapshot first if you want to go back.

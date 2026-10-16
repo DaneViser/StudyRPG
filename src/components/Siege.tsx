@@ -12,15 +12,17 @@ interface Props {
   pending?: SiegeLoot
   /** Souls you actually own right now (not counting this quest's pending souls) */
   banked: number
+  /** Hero gear siege bonus, e.g. 0.3 = +30% army power */
+  gearSiege?: number
   active: boolean
 }
 
-export function SiegeScene({ idle, pending, active, banked }: Props) {
+export function SiegeScene({ idle, pending, active, banked, gearSiege = 0 }: Props) {
   const hp = keepHp(idle.keepLevel)
   const hpLeft = Math.max(0, 1 - idle.keepDamage / hp)
   const troops = UNITS.filter((u) => (idle.units[u.id] ?? 0) > 0)
   const shots = troops.map((u) => SHOT_KIND[u.id] ?? 'spear')
-  const rate = soulsPerMinute(idle)
+  const rate = soulsPerMinute(idle, gearSiege)
 
   return (
     <div className={`siege ${active ? 'raiding' : ''}`}>

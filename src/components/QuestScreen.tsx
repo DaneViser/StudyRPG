@@ -1,7 +1,7 @@
 import { useState, type Dispatch, type FormEvent } from 'react'
 import { HP_PER_MINUTE, SUBJECT_COLORS } from '../game/data'
 import { simulateIdle } from '../game/idle'
-import { formatClock, formatMinutes, monsterFor, nextStreak, sessionRewards } from '../game/logic'
+import { formatClock, formatMinutes, gearBonuses, monsterFor, nextStreak, sessionRewards } from '../game/logic'
 import type { Action } from '../game/reducer'
 import { sfx } from '../game/sound'
 import type { GameState } from '../game/types'
@@ -143,8 +143,12 @@ function Battle({ state, remainingMs, now }: { state: GameState; remainingMs: nu
         </div>
       </div>
       <div className={`enemy-sprite ${tier.flying ? 'flying' : ''}`} key={tier.name}>
-        <MonsterSprite tier={tier} color={subject?.color ?? '#666'} className="monster" />
+        <div className={`monster-body fight-${tier.sprite}`}>
+          <MonsterSprite tier={tier} color={subject?.color ?? '#666'} className="monster" />
+        </div>
+        <span className="slash" aria-hidden="true" />
       </div>
+      {tier.sprite === 'demon' && <span className={`fireball ${tier.dark ? 'big' : ''}`} aria-hidden="true" />}
       <HeroSprite equipped={state.equipped} className="hero-sprite" />
       <div className="loot-preview">
         Loot: <b className="xp">+{reward.xp} XP</b> <b className="gold">+{reward.gold} G</b>
@@ -157,11 +161,12 @@ function SiegePanel({ state, remainingMs }: { state: GameState; remainingMs: num
   const { timer } = state
   const questing = timer.phase === 'focus' && timer.status !== 'idle'
   const elapsed = questing ? (timer.durationMs - remainingMs) / 60_000 : 0
-  const live = questing ? simulateIdle(state.idle, elapsed) : null
+  const gearSiege = gearBonuses(state.equipped).siege
+  const live = questing ? simulateIdle(state.idle, elapsed, gearSiege) : null
   return (
     <section className="panel siege-panel">
       <h2 className="panel-title">The Siege</h2>
-      <SiegeScene idle={live?.idle ?? state.idle} pending={live?.loot} banked={state.idle.souls} active={timer.status === 'running' && questing} />
+      <SiegeScene idle={live?.idle ?? state.idle} pending={live?.loot} banked={state.idle.souls} gearSiege={gearSiege} active={timer.status === 'running' && questing} />
     </section>
   )
 }

@@ -33,9 +33,9 @@ src/
   index.css           All styles (tokens, panels, screens, animations, responsive rules)
   game/               Pure game logic; no React except useGame.ts
     types.ts          All shared types incl. GameState (the save format)
-    data.ts           Static content: gear, titles, monster tiers, reward constants
+    data.ts           Static content: gear (MATERIALS table + mythic list), LEGACY_ITEM_IDS, titles, monster tiers, reward constants
     logic.ts          Formulas: XP curve, rewards, bonuses, streaks, monster lookup, formatting
-    idle.ts           Siege: troops, upgrades, keep HP/loot, simulateIdle(), formatNum()
+    idle.ts           Siege: troops, upgrades, ranked boons (RANKS), army multiplier, keep HP/loot, simulateIdle(), formatNum()
     reducer.ts        createInitialState(), gameReducer(), Action union, grantSession(), siegeLocked()
     storage.ts        loadGame / saveGame / normalizeSave / clearSave (localStorage)
     sound.ts          Chiptune sfx
@@ -87,7 +87,8 @@ vite.config.ts        React plugin, `base: './'` (relative asset paths)
 - On load, a phase that ended while the app was closed completes on the first tick.
 
 ### 3.2 Idle siege model
-- Siege progress is a **pure function of focused minutes**: `simulateIdle(idle, minutes) → { idle, loot }` (`idle.ts`).
+- Siege progress is a **pure function of focused minutes**: `simulateIdle(idle, minutes, gearSiege) → { idle, loot }` (`idle.ts`). `gearSiege` is `gearBonuses(state.equipped).siege`; every caller (reducer, live preview, Army stats) must pass it so they agree.
+- Army power: `soulsPerMinute = Σ(units × unitRate) × armyMultiplier(idle, gearSiege)`, where the multiplier is `(1 + engineers ranks × 5%) × (1 + gearSiege) × Π(army upgrade mults)`.
 - **During a quest** the UI calls it with elapsed minutes `(durationMs - remainingMs) / 60000` to animate live progress; nothing is written to state. `SiegeScene` draws the previewed army/keep but takes `banked` (= `state.idle.souls`) separately, so the souls counter never shows unpaid souls.
 - **On `complete`** the reducer calls it with the full duration and commits the result plus keep loot (gold/XP into the hero).
 - Recruiting and upgrades are rejected while `siegeLocked(state)` (focus phase not idle), so the army used for the live preview equals the army used at payout.
@@ -96,7 +97,7 @@ vite.config.ts        React plugin, `base: './'` (relative asset paths)
 ### 3.3 Rewards pipeline (`reducer.ts` → `complete` → `grantSession`)
 1. `streak = nextStreak(state.streak, endsAt)`
 2. `sessionRewards(minutes, state, streak.count)` → XP/gold with `heroBonuses()` (gear + siege hero upgrades) and streak bonus
-3. `simulateIdle(state.idle, minutes)` → souls, keeps, keep gold/XP
+3. `simulateIdle(state.idle, minutes, gearSiege)` → souls, keeps, keep gold/XP
 4. `addXp(hero + gold, sessionXp + keepXp)` → level-ups (+20 × level gold each)
 5. Update subject totals, prepend a `SessionRecord` (history capped at `HISTORY_LIMIT` = 200), set `state.reward` for the modal.
 
@@ -128,7 +129,7 @@ GameState {
   timer:     { phase: 'focus'|'short'|'long', status: 'idle'|'running'|'paused',
                endsAt: number|null, remainingMs, durationMs, subjectId, focusCount }
   reward:    RewardEvent | null // pending Victory dialog
-  idle:      { souls, totalSouls, units: Record<unitId, count>, upgrades: string[],
+  idle:      { souls, totalSouls, units: Record<unitId, count>, upgrades: string[], ranks: Record<rankId, number>,
                keepLevel, keepDamage }
 }
 ```
@@ -146,7 +147,7 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 | `skipBreak` | | |
 | `complete` | now, recordId | see §3.3 |
 | `buy` / `equip` / `unequip` | itemId / slot | buy checks gold + level, auto-equips |
-| `recruit` / `buyUpgrade` | unitId / upgradeId | blocked by `siegeLocked` |
+| `recruit` / `buyUpgrade` / `buyRank` | unitId / upgradeId / rankId | blocked by `siegeLocked`; ranks also capped at `maxRank` |
 | `dismissReward` | | |
 | `load` | state | import / New Game / dev snapshot restore |
 | `dev` | dev: `DevOp` | developer tools, see §3.4 |
@@ -157,7 +158,7 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 
 - Key: `studyrpg.save.v1`. Whole state as JSON, written on every state change (changes happen only on actions, not ticks).
 - `loadGame()` → parse → `normalizeSave()` → fallback to `createInitialState()` on any error.
-- `normalizeSave()` deep-merges each top-level object over defaults, so **adding new fields with defaults needs no migration**. Rejects anything whose `version !== 1`.
+- `normalizeSave()` deep-merges each top-level object over defaults, so **adding new fields with defaults needs no migration**. Rejects anything whose `version !== 1`. It also maps legacy item ids (`LEGACY_ITEM_IDS`) in `inventory` and `equipped`, dropping ids that no longer exist.
 - All storage calls are wrapped in try/catch (private mode, quota).
 - Export/Import (Config) uses the same JSON + `normalizeSave()`.
 
@@ -176,15 +177,24 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 
 **General:** keep game rules in `src/game/` (pure, testable); components only render and dispatch. Pass `now` into anything time-dependent instead of calling `Date.now()` during render (lint enforces this). Match existing style: no semicolons, single quotes, 2 spaces.
 
-**Add a gear item:** append to `ITEMS` in `data.ts` (unique `id`, `slot`, `price`, `minLevel`, bonuses, `color`, armour also `shade`). The shop, hero screen and sprite colours pick it up automatically.
+**Add gear:** a new material rank is one row in `MATERIALS` (`data.ts`), which generates `<key>-weapon`, `<key>-armor`, `<key>-accessory`. A one-off item goes in `mythicItems` (`rarity: 'mythic'`, `xpBonus`, `goldBonus`, `siegeBonus`, `color`). The shop, hero screen, bonuses and sprite colours (shade/highlight are computed with `mix()`) pick it up automatically. **Never rename or remove an item id** that players may own; if you must, add the old id to `LEGACY_ITEM_IDS`. `normalizeSave` maps old ids and drops unknown ones.
 
-**Add a monster tier:** add a grid to `Sprites.tsx` + `MONSTER_GRIDS`, extend `MonsterTier['sprite']`, add an entry to `MONSTERS` (sorted by `minMinutes`). Palette keys: `o` outline, `M` subject colour, others per `MonsterSprite`. Check it fits the 260 px stage (224 px in short-screen mode) without covering the top-left info box.
+**Add a boon (repeatable):** append to `RANKS` in `idle.ts` (`perRank` with `xp` / `gold` / `army`, `baseCost`, `growth`, `maxRank`, `req`). Cost of the next rank = `ceil(baseCost × growth^owned)`. New `perRank` keys need handling in `rankTotal` users.
+
+**Add a monster tier:** add a grid to `Sprites.tsx` + `MONSTER_GRIDS`, extend `MonsterTier['sprite']`, add an entry to `MONSTERS` (sorted by `minMinutes`), and add a `fight-<sprite>` keyframe (see §6.1). Palette keys: `o` outline, `M` subject colour, others per `MonsterSprite`. Check it fits the 260 px stage (224 px in short-screen mode) without covering the top-left info box.
 
 **Add a troop:** append to `UNITS` in `idle.ts` (order = unlock order) and add a look in `UNIT_LOOKS` (+ optional projectile in `SHOT_KIND` in `Siege.tsx`).
 
 **Add an upgrade:** append to `UPGRADES` with an `effect` (`unit` / `army` / `loot` / `hero`) and a `req`. New effect kinds must be handled in `idle.ts` (and `heroBonuses` if they affect the hero).
 
 **Add a screen:** create `components/XScreen.tsx`, add it to `TABS` and the render switch in `App.tsx`.
+
+### 6.1 Battle animation
+- Markup: `.battle.fighting` > `.enemy-sprite` (position + entrance) > `.monster-body.fight-<sprite>` (combat motion + hit flash) > `svg.monster` (aura filter; flying foes also flap). A `.slash` arc lives in `.enemy-sprite`; demons add a `.fireball` in the stage.
+- Every combat keyframe shares one **2.4 s loop, `steps(24)`**: the hero strikes at ~16–24% (foe flashes at 20%), the foe hits at ~64–70% (hero flashes at 70% and 78%). Keep new foes on that timeline.
+- Horizontal travel uses **`cqw`** (the stage is `container-type: inline-size`), so lunges meet in the middle at any width. Vertical offsets stay in px.
+- `.paused` stops everything; `prefers-reduced-motion` disables all animation.
+- Hero sprite: 18×22 grid, palette keys documented above `HERO` in `Sprites.tsx`. `HeroSprite` wraps the svg in `.hero-wrap` and adds `.mythic` + `--aura` when a mythic item is equipped.
 
 **Sprites:** each sprite is an array of equal-length strings; each char maps to a colour in a palette (`.` = transparent). `PixelSprite` merges horizontal runs into `<rect>`s. Keep widths consistent (a quick script check is worth it).
 

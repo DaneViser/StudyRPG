@@ -1,7 +1,7 @@
 import { HISTORY_LIMIT, ITEM_BY_ID } from './data'
 import { devReducer, type DevOp } from './dev'
-import { createIdleState, simulateIdle, UNITS, unitCost, unitUnlocked, UPGRADE_BY_ID, upgradeVisible } from './idle'
-import { addXp, monsterFor, nextStreak, phaseMinutes, sessionRewards } from './logic'
+import { createIdleState, RANK_BY_ID, rankCost, simulateIdle, UNITS, unitCost, unitUnlocked, UPGRADE_BY_ID, upgradeVisible } from './idle'
+import { addXp, gearBonuses, monsterFor, nextStreak, phaseMinutes, sessionRewards } from './logic'
 import type { GameState, Phase, Settings, Slot, TimerState } from './types'
 
 export type Action =
@@ -19,6 +19,7 @@ export type Action =
   | { type: 'buy'; itemId: string }
   | { type: 'recruit'; unitId: string }
   | { type: 'buyUpgrade'; upgradeId: string }
+  | { type: 'buyRank'; rankId: string }
   | { type: 'equip'; itemId: string }
   | { type: 'unequip'; slot: Slot }
   | { type: 'dismissReward' }
@@ -69,7 +70,7 @@ export function createInitialState(): GameState {
 export function grantSession(state: GameState, minutes: number, subjectId: string | null, at: number, recordId: string): GameState {
   const streak = nextStreak(state.streak, at)
   const { xp, gold } = sessionRewards(minutes, state, streak.count)
-  const siege = simulateIdle(state.idle, minutes)
+  const siege = simulateIdle(state.idle, minutes, gearBonuses(state.equipped).siege)
   const leveled = addXp({ ...state.hero, gold: state.hero.gold + gold + siege.loot.gold }, xp + siege.loot.xp)
   const subjectName = state.subjects.find((s) => s.id === subjectId)?.name ?? 'Unknown'
 
@@ -215,6 +216,19 @@ export function gameReducer(state: GameState, action: Action): GameState {
       return {
         ...state,
         idle: { ...state.idle, souls: state.idle.souls - up.cost, upgrades: [...state.idle.upgrades, up.id] },
+      }
+    }
+
+    case 'buyRank': {
+      if (siegeLocked(state)) return state
+      const rank = RANK_BY_ID[action.rankId]
+      const owned = state.idle.ranks[action.rankId] ?? 0
+      if (!rank || owned >= rank.maxRank || !upgradeVisible(state.idle, rank)) return state
+      const cost = rankCost(rank, owned)
+      if (state.idle.souls < cost) return state
+      return {
+        ...state,
+        idle: { ...state.idle, souls: state.idle.souls - cost, ranks: { ...state.idle.ranks, [rank.id]: owned + 1 } },
       }
     }
 

@@ -1,4 +1,5 @@
 import { ITEM_BY_ID, type MonsterTier } from '../game/data'
+import type { CSSProperties } from 'react'
 import type { GameState } from '../game/types'
 
 type Palette = Record<string, string>
@@ -26,46 +27,71 @@ function PixelSprite({ grid, palette, scale, className }: { grid: string[]; pale
   )
 }
 
+// Knight facing right, sword raised. Keys: A/a/L armour (main/shade/light), W blade, g hilt, G grip,
+// C/c cape, P plume, s/S skin, e eye, k belt, X relic gem, b/B boots.
 const HERO = [
-  '..............o.',
-  '....oooooo...oWo',
-  '...oAAAAAAo..oWo',
-  '...oAaaaaAo..oWo',
-  '...oAesseAo..oWo',
-  '...oAssssAo..oWo',
-  '....oossoo..oggg',
-  '..ooAAAAAAoo.ogo',
-  '.oCoAAaaAAAossso',
-  '.oCoAAAAAAAoooo.',
-  '.oCoAbbXbbAo....',
-  '.oCoAAAAAAAo....',
-  '.oCCoAAAAAo.....',
-  '..oCoaAoAao.....',
-  '...ooAAoAAo.....',
-  '....oaaoaao.....',
-  '....obboobbo....',
-  '....obboobbo....',
-  '...obbbo.obbbo..',
-  '...ooooo.ooooo..',
+  '......PPP.........',
+  '.....PPPPP.....o..',
+  '......oooooo..oWo.',
+  '.....oLAAAAAo.oWo.',
+  '....oLAAAAAAAooWo.',
+  '....oaaaaaaaaooWo.',
+  '....oAssssessooWo.',
+  '....oAsssssSsooWo.',
+  '.....oAsssso.ogggo',
+  '..oCoAAAAAAo..oGo.',
+  '..oCoALAAAAAoossso',
+  '.oCCoAAaaAAAooooo.',
+  '.oCCoakkXkkao.....',
+  '.oCCoAAAAAAAo.....',
+  '.oCcCoAAaAAo......',
+  '..oCcoAAoAAo......',
+  '..oCcoaaoaao......',
+  '...oooAAoAAo......',
+  '....oaaooaao......',
+  '....obbo.obbo.....',
+  '...obBbo.obBbo....',
+  '...ooooo.ooooo....',
 ]
+
+/** Mixes two #rrggbb colours; t = 0 gives `a`, 1 gives `b`. */
+function mix(a: string, b: string, t: number): string {
+  const ch = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16)
+  return `#${[0, 1, 2].map((i) => Math.round(ch(a, i) + (ch(b, i) - ch(a, i)) * t).toString(16).padStart(2, '0')).join('')}`
+}
 
 export function HeroSprite({ equipped, scale = 6, className }: { equipped: GameState['equipped']; scale?: number; className?: string }) {
   const weapon = equipped.weapon ? ITEM_BY_ID[equipped.weapon] : undefined
   const armor = equipped.armor ? ITEM_BY_ID[equipped.armor] : undefined
   const relic = equipped.accessory ? ITEM_BY_ID[equipped.accessory] : undefined
+  const armorColor = armor?.color ?? '#5878a8'
+  const cape = relic?.rarity === 'mythic' ? relic.color : '#a02838'
   const palette: Palette = {
     o: '#0d0a1a',
     s: '#f2c29b',
+    S: '#c88a64',
     e: '#1a1030',
-    A: armor?.color ?? '#5878a8',
-    a: armor?.shade ?? '#384c78',
+    A: armorColor,
+    a: mix(armorColor, '#000000', 0.38),
+    L: mix(armorColor, '#ffffff', 0.45),
     W: weapon?.color ?? '#8a5a30',
     g: weapon ? '#d8a028' : '#5a3a1e',
-    C: relic ? relic.color : '#a02838',
+    G: '#4a2a14',
+    C: cape,
+    c: mix(cape, '#000000', 0.4),
+    P: cape,
+    k: '#5a3a22',
+    X: relic?.color ?? '#8a6a3a',
     b: '#4a2e1a',
-    X: relic?.color ?? '#4a2e1a',
+    B: '#7a5030',
   }
-  return <PixelSprite grid={HERO} palette={palette} scale={scale} className={className} />
+  // Mythic gear makes the hero glow in that item's colour
+  const mythic = [weapon, armor, relic].find((i) => i?.rarity === 'mythic')
+  return (
+    <span className={`hero-wrap ${mythic ? 'mythic' : ''}`} style={mythic ? ({ '--aura': mythic.color } as CSSProperties) : undefined}>
+      <PixelSprite grid={HERO} palette={palette} scale={scale} className={className} />
+    </span>
+  )
 }
 
 const BAT = [

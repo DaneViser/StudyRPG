@@ -4,16 +4,17 @@ export interface Item {
   id: string
   name: string
   slot: Slot
+  rarity: 'common' | 'mythic'
   price: number
   minLevel: number
   /** Fractional bonus, e.g. 0.1 = +10% XP */
   xpBonus: number
   goldBonus: number
+  /** Fractional boost to army power (souls and keep damage) */
+  siegeBonus: number
   description: string
   /** Main colour used when drawing the item on the hero sprite */
   color: string
-  /** Shade colour (armour only) */
-  shade?: string
 }
 
 export interface Subject {
@@ -68,6 +69,8 @@ export interface IdleState {
   totalSouls: number
   units: Record<string, number>
   upgrades: string[]
+  /** Ranks bought in repeatable boosts, by id */
+  ranks: Record<string, number>
   /** Level of the demon keep currently under siege (1-based) */
   keepLevel: number
   /** Damage dealt to the current keep */

@@ -1,16 +1,40 @@
 import type { Dispatch } from 'react'
-import { formatNum, keepHp, keepLoot, soulsPerMinute, UNITS, unitCost, unitRate, unitUnlocked, UPGRADES, upgradeVisible } from '../game/idle'
+import {
+  armyMultiplier,
+  formatNum,
+  keepHp,
+  keepLoot,
+  RANKS,
+  rankCost,
+  soulsPerMinute,
+  UNITS,
+  unitCost,
+  unitRate,
+  unitUnlocked,
+  UPGRADES,
+  upgradeVisible,
+  type Upgrade,
+} from '../game/idle'
+import { gearBonuses, percent } from '../game/logic'
 import { siegeLocked, type Action } from '../game/reducer'
 import { sfx } from '../game/sound'
 import type { GameState } from '../game/types'
 import { SiegeScene } from './Siege'
 import { SoulIcon, UnitSprite } from './Sprites'
 
+function reqText(req: Upgrade['req']): string {
+  if ('keep' in req) return `Reach keep level ${req.keep}`
+  if ('army' in req) return `Have ${req.army} troops`
+  const unit = UNITS.find((u) => u.id === req.unit)
+  return `Own ${req.count} ${unit?.name ?? req.unit}s`
+}
+
 export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Dispatch<Action> }) {
   const { idle } = state
   const locked = siegeLocked(state)
+  const gearSiege = gearBonuses(state.equipped).siege
   const loot = keepLoot(idle, idle.keepLevel)
-  const upgrades = UPGRADES.filter((u) => !idle.upgrades.includes(u.id) && upgradeVisible(idle, u))
+  const upgrades = UPGRADES.filter((u) => !idle.upgrades.includes(u.id) && upgradeVisible(idle, u)).sort((a, b) => a.cost - b.cost)
   const owned = UPGRADES.filter((u) => idle.upgrades.includes(u.id))
   const buy = (action: Action) => {
     if (state.settings.sound) sfx.buy()
@@ -24,7 +48,7 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
         <p className="hint">
           Your army raids demon keeps <b>only while you study</b>. Souls and keep loot are delivered when you win a quest; fleeing forfeits them.
         </p>
-        <SiegeScene idle={idle} banked={idle.souls} active={false} />
+        <SiegeScene idle={idle} banked={idle.souls} gearSiege={gearSiege} active={false} />
         <dl className="stat-table siege-stats">
           <dt>Keep HP</dt>
           <dd>
@@ -37,7 +61,11 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
           <dt>Keeps razed</dt>
           <dd>{idle.keepLevel - 1}</dd>
           <dt>Souls per study min</dt>
-          <dd>{formatNum(soulsPerMinute(idle))}</dd>
+          <dd>{formatNum(soulsPerMinute(idle, gearSiege))}</dd>
+          <dt>Army power</dt>
+          <dd>×{armyMultiplier(idle, gearSiege).toFixed(2)}</dd>
+          <dt>From hero's gear</dt>
+          <dd className="soul">+{percent(gearSiege)}</dd>
           <dt>Souls earned (all time)</dt>
           <dd>{formatNum(idle.totalSouls)}</dd>
         </dl>
@@ -49,8 +77,9 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
           <span className="wallet-amount">{formatNum(idle.souls)}</span>
           <span className="muted">souls available</span>
         </div>
-        <h2 className="panel-title">Recruit</h2>
         {locked && <p className="msg">The quartermaster is at the front. Recruit between quests.</p>}
+
+        <h2 className="panel-title">Recruit</h2>
         <ul className="shop-list">
           {UNITS.map((u, i) => {
             const count = idle.units[u.id] ?? 0
@@ -81,10 +110,46 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
                   <span className="item-bonus">+{formatNum(unitRate(idle, u))} souls/min each</span>
                 </div>
                 <span className="price soul-price">
-                  <SoulIcon scale={2} /> {formatNum(cost)}</span>
+                  <SoulIcon scale={2} /> {formatNum(cost)}
+                </span>
                 <button className="btn btn-small" disabled={locked || idle.souls < cost} onClick={() => buy({ type: 'recruit', unitId: u.id })}>
                   Recruit
                 </button>
+              </li>
+            )
+          })}
+        </ul>
+
+        <h2 className="panel-title">Boons</h2>
+        <p className="hint">Repeatable. Each rank costs more than the last.</p>
+        <ul className="shop-list">
+          {RANKS.map((r) => {
+            const rank = idle.ranks[r.id] ?? 0
+            const maxed = rank >= r.maxRank
+            const visible = upgradeVisible(idle, r)
+            const cost = rankCost(r, rank)
+            return (
+              <li key={r.id} className={`shop-item ${visible ? '' : 'locked'}`}>
+                <span className="unit-icon rank-badge">{rank}</span>
+                <div className="shop-info">
+                  <span className="item-name">
+                    {r.name} <span className="muted">
+                      {rank}/{r.maxRank}
+                    </span>
+                  </span>
+                  <span className="item-bonus">{r.description}</span>
+                  {!visible && <span className="item-desc">{reqText(r.req)} to unlock.</span>}
+                </div>
+                {visible && !maxed && (
+                  <span className="price soul-price">
+                    <SoulIcon scale={2} /> {formatNum(cost)}
+                  </span>
+                )}
+                {visible && (
+                  <button className="btn btn-small" disabled={locked || maxed || idle.souls < cost} onClick={() => buy({ type: 'buyRank', rankId: r.id })}>
+                    {maxed ? 'Max' : 'Rank up'}
+                  </button>
+                )}
               </li>
             )
           })}
@@ -101,7 +166,8 @@ export function ArmyScreen({ state, dispatch }: { state: GameState; dispatch: Di
                 <span className="item-bonus">{u.description}</span>
               </div>
               <span className="price soul-price">
-                  <SoulIcon scale={2} /> {formatNum(u.cost)}</span>
+                <SoulIcon scale={2} /> {formatNum(u.cost)}
+              </span>
               <button className="btn btn-small" disabled={locked || idle.souls < u.cost} onClick={() => buy({ type: 'buyUpgrade', upgradeId: u.id })}>
                 Buy
               </button>

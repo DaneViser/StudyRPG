@@ -1,6 +1,6 @@
 import type { Dispatch } from 'react'
 import { ITEM_BY_ID, ITEMS, SLOT_LABEL } from '../game/data'
-import { bonusText, heroBonuses, liveStreak, percent, streakBonus, titleFor, xpToNext } from '../game/logic'
+import { bonusText, gearBonuses, heroBonuses, liveStreak, percent, streakBonus, titleFor, xpToNext } from '../game/logic'
 import type { Action } from '../game/reducer'
 import type { GameState, Slot } from '../game/types'
 import { HeroSprite } from './Sprites'
@@ -36,6 +36,8 @@ export function HeroScreen({ state, dispatch, now }: { state: GameState; dispatc
           <dd className="xp">+{percent(gear.xp + streakBonus(streak))}</dd>
           <dt>Gold bonus</dt>
           <dd className="gold">+{percent(gear.gold)}</dd>
+          <dt>Siege bonus (gear)</dt>
+          <dd className="soul">+{percent(gearBonuses(equipped).siege)}</dd>
         </dl>
       </section>
 

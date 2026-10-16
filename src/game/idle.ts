@@ -53,14 +53,49 @@ export const UPGRADES: Upgrade[] = [
   { id: 'scholars-blessing', name: "Scholar's Blessing", cost: 80000, description: 'Hero +10% XP and gold', effect: { kind: 'hero', xp: 0.1, gold: 0.1 }, req: { keep: 8 } },
   { id: 'runic-cores', name: 'Runic Cores', cost: 120000, description: 'Siege Golems x2', effect: { kind: 'unit', unit: 'golem', mult: 2 }, req: { unit: 'golem', count: 5 } },
   { id: 'dragon-pact', name: 'Dragon Pact', cost: 600000, description: 'Dragon Riders x2', effect: { kind: 'unit', unit: 'dragon', mult: 2 }, req: { unit: 'dragon', count: 5 } },
+  { id: 'merchant-guild', name: 'Merchant Guild', cost: 12000, description: 'Hero +10% gold from quests', effect: { kind: 'hero', xp: 0, gold: 0.1 }, req: { keep: 5 } },
+  { id: 'sages-library', name: "Sage's Library", cost: 12000, description: 'Hero +10% XP from quests', effect: { kind: 'hero', xp: 0.1, gold: 0 }, req: { keep: 5 } },
+  { id: 'lords-of-plunder', name: 'Lords of Plunder', cost: 250000, description: 'Keep loot x2', effect: { kind: 'loot', mult: 2 }, req: { keep: 10 } },
+  { id: 'golden-age', name: 'Golden Age', cost: 1500000, description: 'Hero +15% gold from quests', effect: { kind: 'hero', xp: 0, gold: 0.15 }, req: { keep: 12 } },
+  { id: 'enlightenment', name: 'Enlightenment', cost: 1500000, description: 'Hero +15% XP from quests', effect: { kind: 'hero', xp: 0.15, gold: 0 }, req: { keep: 12 } },
 ]
+
+/** Repeatable boosts: each rank adds the same bonus, but costs `growth`x more than the last (capped). */
+export interface Rank {
+  id: string
+  name: string
+  description: string
+  perRank: { xp?: number; gold?: number; army?: number }
+  baseCost: number
+  growth: number
+  maxRank: number
+  req: Upgrade['req']
+}
+
+export const RANKS: Rank[] = [
+  { id: 'treasury', name: 'Royal Treasury', description: 'Hero +2% gold per rank', perRank: { gold: 0.02 }, baseCost: 2000, growth: 1.9, maxRank: 20, req: { keep: 4 } },
+  { id: 'academy', name: 'Grand Academy', description: 'Hero +2% XP per rank', perRank: { xp: 0.02 }, baseCost: 2000, growth: 1.9, maxRank: 20, req: { keep: 4 } },
+  { id: 'engineers', name: 'Siege Engineers', description: 'Whole army +5% per rank', perRank: { army: 0.05 }, baseCost: 1500, growth: 1.8, maxRank: 20, req: { army: 25 } },
+]
+
+export const RANK_BY_ID: Record<string, Rank> = Object.fromEntries(RANKS.map((r) => [r.id, r]))
+
+export function rankCost(rank: Rank, owned: number): number {
+  return Math.ceil(rank.baseCost * Math.pow(rank.growth, owned))
+}
+
+function rankTotal(idle: IdleState, key: 'xp' | 'gold' | 'army'): number {
+  let total = 0
+  for (const r of RANKS) total += (idle.ranks?.[r.id] ?? 0) * (r.perRank[key] ?? 0)
+  return total
+}
 
 export const UPGRADE_BY_ID: Record<string, Upgrade> = Object.fromEntries(UPGRADES.map((u) => [u.id, u]))
 
 const COST_GROWTH = 1.15
 
 export function createIdleState(): IdleState {
-  return { souls: 0, totalSouls: 0, units: { squire: 1 }, upgrades: [], keepLevel: 1, keepDamage: 0 }
+  return { souls: 0, totalSouls: 0, units: { squire: 1 }, upgrades: [], ranks: {}, keepLevel: 1, keepDamage: 0 }
 }
 
 export function unitCost(unit: Unit, owned: number): number {
@@ -76,7 +111,7 @@ export function unitUnlocked(idle: IdleState, index: number): boolean {
   return index === 0 || (idle.units[UNITS[index - 1].id] ?? 0) > 0
 }
 
-export function upgradeVisible(idle: IdleState, up: Upgrade): boolean {
+export function upgradeVisible(idle: IdleState, up: Pick<Upgrade, 'req'>): boolean {
   const r = up.req
   if ('unit' in r) return (idle.units[r.unit] ?? 0) >= r.count
   if ('keep' in r) return idle.keepLevel >= r.keep
@@ -93,17 +128,23 @@ export function unitRate(idle: IdleState, unit: Unit): number {
   return rate
 }
 
+/** Army power multiplier from upgrades, ranks and the hero's gear (`gearSiege`, e.g. 0.3 = +30%). */
+export function armyMultiplier(idle: IdleState, gearSiege = 0): number {
+  let mult = (1 + rankTotal(idle, 'army')) * (1 + gearSiege)
+  for (const e of effects(idle)) if (e.kind === 'army') mult *= e.mult
+  return mult
+}
+
 /** Souls (and siege damage) per minute of study. */
-export function soulsPerMinute(idle: IdleState): number {
+export function soulsPerMinute(idle: IdleState, gearSiege = 0): number {
   let total = 0
   for (const unit of UNITS) total += (idle.units[unit.id] ?? 0) * unitRate(idle, unit)
-  for (const e of effects(idle)) if (e.kind === 'army') total *= e.mult
-  return total
+  return total * armyMultiplier(idle, gearSiege)
 }
 
 export function idleHeroBonus(idle: IdleState) {
-  let xp = 0
-  let gold = 0
+  let xp = rankTotal(idle, 'xp')
+  let gold = rankTotal(idle, 'gold')
   for (const e of effects(idle)) {
     if (e.kind === 'hero') {
       xp += e.xp
@@ -120,7 +161,7 @@ export function keepHp(level: number): number {
 export function keepLoot(idle: IdleState, level: number) {
   let mult = 1
   for (const e of effects(idle)) if (e.kind === 'loot') mult *= e.mult
-  return { gold: Math.round(25 * level * mult), xp: Math.round(30 * level * mult) }
+  return { gold: Math.round(50 * level * mult), xp: Math.round(30 * level * mult) }
 }
 
 export const KEEP_NAMES = ['Imp Outpost', 'Ghoul Barracks', 'Bone Tower', 'Cursed Abbey', 'Wraith Citadel', 'Blood Fortress', 'Infernal Spire', 'Dread Castle']
@@ -129,9 +170,9 @@ export function keepName(level: number): string {
   return KEEP_NAMES[(level - 1) % KEEP_NAMES.length]
 }
 
-/** Advances the siege by `minutes` of study. */
-export function simulateIdle(idle: IdleState, minutes: number): { idle: IdleState; loot: SiegeLoot } {
-  const gained = soulsPerMinute(idle) * Math.max(0, minutes)
+/** Advances the siege by `minutes` of study; `gearSiege` is the hero's gear siege bonus. */
+export function simulateIdle(idle: IdleState, minutes: number, gearSiege = 0): { idle: IdleState; loot: SiegeLoot } {
+  const gained = soulsPerMinute(idle, gearSiege) * Math.max(0, minutes)
   let { keepLevel, keepDamage } = idle
   keepDamage += gained
   const loot: SiegeLoot = { souls: gained, keeps: 0, gold: 0, xp: 0 }

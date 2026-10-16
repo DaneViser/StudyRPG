@@ -2,7 +2,7 @@
 // so they reuse the real game rules and stay out of the normal reducer.
 
 import { ITEMS } from './data'
-import { keepLoot, UNITS, UPGRADES } from './idle'
+import { keepLoot, RANKS, UNITS, UPGRADES } from './idle'
 import { addXp, dayKey } from './logic'
 import { grantSession } from './reducer'
 import type { GameState } from './types'
@@ -61,7 +61,10 @@ export function devReducer(state: GameState, d: DevOp): GameState {
     }
 
     case 'allUpgrades':
-      return { ...state, idle: { ...state.idle, upgrades: UPGRADES.map((u) => u.id) } }
+      return {
+        ...state,
+        idle: { ...state.idle, upgrades: UPGRADES.map((u) => u.id), ranks: Object.fromEntries(RANKS.map((r) => [r.id, r.maxRank])) },
+      }
 
     case 'razeKeeps': {
       let { keepLevel } = state.idle
