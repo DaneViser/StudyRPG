@@ -180,7 +180,11 @@ Cost grows **×1.15** per troop owned of that type. A troop type is revealed aft
 - **Save data** lives in this browser only (localStorage). **Export** downloads a JSON backup; **Import** loads one; **New Game** wipes everything (with confirmation).
 - The log keeps the last 200 sessions (shows 50).
 
-## 10. Look & feel
+## 10. Where to play
+
+https://daneviser.github.io/StudyRPG/ (updates automatically after each push to `master`). Every player has their own save in their own browser.
+
+## 11. Look & feel
 
 8/16-bit castle-at-night style: pixel fonts (Press Start 2P, VT323), hand-made pixel sprites, moon and castle silhouette, twinkling stars, chunky pixel borders, optional scanlines. Animations respect the OS "reduce motion" setting. Layout fits on one screen on most desktops and stacks on phones.
 

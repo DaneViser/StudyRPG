@@ -18,6 +18,7 @@ How the code is built, how to extend it, and how to move saving to a backend wit
 | Storage | `localStorage` (single JSON blob) |
 | Audio | WebAudio oscillators (no audio files) |
 | Graphics | Inline SVG pixel sprites built from text grids; CSS for scenes/animations |
+| Hosting | GitHub Pages via GitHub Actions (§5.1) |
 
 No backend, no external runtime dependencies beyond React.
 
@@ -51,7 +52,9 @@ src/
     RewardModal.tsx   Victory dialog
     Sprites.tsx       PixelSprite renderer + all sprite grids (hero, monsters, troops, keep, icons)
 docs/                 GAME_FEATURES.md (player-facing), TECHNICAL.md (this file)
-.claude/launch.json   Dev-server config for the Claude preview pane
+.github/workflows/    deploy.yml: build + publish to GitHub Pages
+vite.config.ts        React plugin, `base: './'` (relative asset paths)
+.claude/launch.json   Preview configs: `studyrpg` (dev server), `studyrpg-pages` (production build at /StudyRPG/)
 ```
 
 ---
@@ -143,6 +146,15 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 - `normalizeSave()` deep-merges each top-level object over defaults, so **adding new fields with defaults needs no migration**. Rejects anything whose `version !== 1`.
 - All storage calls are wrapped in try/catch (private mode, quota).
 - Export/Import (Config) uses the same JSON + `normalizeSave()`.
+
+### 5.1 Hosting (GitHub Pages)
+
+- Live URL: https://daneviser.github.io/StudyRPG/
+- `.github/workflows/deploy.yml` runs on every push to `master` (or manually via *Run workflow*): `npm ci` → `npm run lint` → `npm run build` → upload `dist/` → deploy.
+- One-time repo setting: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+- `base: './'` makes all asset URLs relative, so the build works at any subpath (and would keep working if the repo is renamed or a custom domain is added). If a client-side router is ever added, switch to `base: '/StudyRPG/'` and add a `404.html` fallback.
+- Saves are per visitor and per browser: each friend gets their own localStorage save on `daneviser.github.io`. The key `studyrpg.save.v1` is shared by every Pages site on that domain, so keep it unique.
+- Test the production build locally like Pages serves it: `npm run build && npx vite preview --base /StudyRPG/`, then open `http://localhost:4173/StudyRPG/`.
 
 ---
 

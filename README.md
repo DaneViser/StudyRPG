@@ -2,6 +2,8 @@
 
 A pixel-art study timer (Pomodoro-style) where every finished study session is a battle won. Earn XP to level up your hero, gold for gear, and command an idle army that raids demon keeps while you study.
 
+**Play:** https://daneviser.github.io/StudyRPG/
+
 ```bash
 npm install
 npm run dev
