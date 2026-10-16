@@ -31,10 +31,12 @@ export default function App() {
         <div className="castle" />
       </div>
       <main className="frame">
-        <h1 className="logo">
-          Study<span>RPG</span>
-        </h1>
-        <Hud state={state} now={now} />
+        <div className="topbar">
+          <h1 className="logo">
+            Study<span>RPG</span>
+          </h1>
+          <Hud state={state} now={now} />
+        </div>
         <nav className="tabs" aria-label="Screens">
           {TABS.map((t) => (
             <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`} aria-current={tab === t.id} onClick={() => setTab(t.id)}>

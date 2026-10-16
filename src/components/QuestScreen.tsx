@@ -22,19 +22,28 @@ export function QuestScreen({ state, dispatch, remainingMs, now }: Props) {
   const busy = timer.status !== 'idle'
   const isFocus = timer.phase === 'focus'
 
+  const clock = formatClock(remainingMs)
+
+  // Main column: battle + siege side by side with the controls, so both are visible while studying
   return (
     <div className="quest-layout">
-      <SubjectPicker state={state} dispatch={dispatch} locked={busy && isFocus} />
-      <section className="panel stage-panel">
-        <h2 className="panel-title">{isFocus ? 'Quest' : timer.phase === 'long' ? 'Save Room' : 'Rest'}</h2>
-        {isFocus ? <Battle state={state} remainingMs={remainingMs} now={now} /> : <Camp state={state} remainingMs={remainingMs} />}
-        <div className="clock" aria-live="off">
-          {formatClock(remainingMs)}
-        </div>
-        {isFocus && !busy && <DurationPicker value={settings.focusMinutes} dispatch={dispatch} />}
-        <Controls state={state} dispatch={dispatch} />
-      </section>
-      <SiegePanel state={state} remainingMs={remainingMs} />
+      <div className="quest-main">
+        <section className="panel stage-panel" aria-label="Battle">
+          {isFocus ? <Battle state={state} remainingMs={remainingMs} now={now} /> : <Camp state={state} remainingMs={remainingMs} />}
+        </section>
+        <SiegePanel state={state} remainingMs={remainingMs} />
+      </div>
+      <div className="quest-side">
+        <section className="panel timer-panel">
+          <h2 className="panel-title">{isFocus ? 'Quest' : timer.phase === 'long' ? 'Save Room' : 'Rest'}</h2>
+          <div className={`clock ${clock.length > 5 ? 'clock-long' : ''}`} aria-live="off">
+            {clock}
+          </div>
+          {isFocus && !busy && <DurationPicker value={settings.focusMinutes} dispatch={dispatch} />}
+          <Controls state={state} dispatch={dispatch} />
+        </section>
+        <SubjectPicker state={state} dispatch={dispatch} locked={busy && isFocus} />
+      </div>
     </div>
   )
 }

@@ -121,16 +121,17 @@ svg {
 .frame {
   position: relative;
   z-index: 1;
-  max-width: 1040px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 20px 16px 48px;
+  padding: 12px 16px 32px;
 }
 
 .logo {
   font-family: var(--font-pixel);
-  font-size: 28px;
+  font-size: 24px;
   text-align: center;
-  margin: 8px 0 20px;
+  margin: 0;
+  white-space: nowrap;
   color: var(--text);
   letter-spacing: 2px;
   text-shadow:
@@ -142,6 +143,18 @@ svg {
   color: var(--gold);
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.topbar .hud {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 .panel {
   background: var(--panel);
   border: var(--px) solid var(--edge-dark);
@@ -149,7 +162,7 @@ svg {
     inset var(--px) var(--px) 0 var(--edge-light),
     inset calc(var(--px) * -1) calc(var(--px) * -1) 0 #120c28,
     var(--px) var(--px) 0 var(--ink);
-  padding: 18px 20px;
+  padding: 14px 16px;
 }
 
 .panel-title {
@@ -273,7 +286,7 @@ svg {
 .tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
@@ -406,9 +419,24 @@ input[type='number'] {
 
 .quest-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 12px;
   align-items: start;
+}
+
+.quest-main,
+.quest-side {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.stage-panel {
+  padding: 8px;
+}
+
+.timer-panel {
+  text-align: center;
 }
 
 .subject-list {
@@ -492,13 +520,13 @@ input[type='number'] {
   outline: 3px solid var(--text);
 }
 
-.stage-panel {
-  text-align: center;
+.stage-panel .battle {
+  margin: 0;
 }
 
 .battle {
   position: relative;
-  height: 320px;
+  height: 260px;
   margin: 0 auto 10px;
   background:
     linear-gradient(transparent 78%, #2a1c50 78%, #2a1c50 82%, #1a1238 82%),
@@ -509,11 +537,11 @@ input[type='number'] {
 
 .enemy-info {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 10px;
+  left: 12px;
   width: 250px;
   z-index: 2;
-  text-align: right;
+  text-align: left;
 }
 
 .enemy-meta {
@@ -734,13 +762,17 @@ input[type='number'] {
 
 .clock {
   font-family: var(--font-pixel);
-  font-size: clamp(40px, 9vw, 72px);
-  margin: 18px 0 16px;
+  font-size: 56px;
+  margin: 10px 0 18px;
   color: var(--text);
   text-shadow:
     4px 4px 0 var(--danger),
     6px 6px 0 var(--ink);
   font-variant-numeric: tabular-nums;
+}
+
+.clock.clock-long {
+  font-size: 40px;
 }
 
 .duration {
@@ -773,8 +805,8 @@ input[type='number'] {
 
 /* ---------- Siege (idle) ---------- */
 
-.siege-panel {
-  grid-column: 1 / -1;
+.siege-panel .panel-title {
+  margin-bottom: 8px;
 }
 
 .siege {
@@ -783,8 +815,8 @@ input[type='number'] {
   grid-template-columns: 1fr auto;
   grid-template-rows: 1fr auto;
   gap: 8px 16px;
-  min-height: 190px;
-  padding: 12px 12px 8px;
+  min-height: 170px;
+  padding: 10px 12px 6px;
   background:
     linear-gradient(transparent 70%, #24183c 70%, #24183c 73%, #160e2a 73%),
     linear-gradient(#1a1030, #2a1238);
@@ -1314,16 +1346,51 @@ input[type='number'] {
     grid-row: 2;
   }
 
-  .quest-layout,
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .quest-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .quest-main,
+  .quest-side {
+    display: contents;
+  }
+
+  .stage-panel {
+    order: 1;
+  }
+
+  .timer-panel {
+    order: 2;
+  }
+
+  .subject-panel {
+    order: 3;
+  }
+
+  .siege-panel {
+    order: 4;
+  }
+
+  .clock {
+    font-size: 48px;
+  }
+
+  .clock.clock-long {
+    font-size: 36px;
+  }
+
   .army-layout,
   .hero-layout,
   .log-layout,
   .config-layout {
     grid-template-columns: 1fr;
-  }
-
-  .stage-panel {
-    order: -1;
   }
 
   .enemy-info {
@@ -1376,6 +1443,25 @@ input[type='number'] {
 
   .logo {
     font-size: 20px;
+  }
+}
+
+/* Short laptop screens: squeeze the stage so battle and siege share one view */
+@media (min-width: 761px) and (max-height: 760px) {
+  .battle {
+    height: 224px;
+  }
+
+  .battle .hero-sprite {
+    bottom: 14%;
+  }
+
+  .siege {
+    min-height: 150px;
+  }
+
+  .clock {
+    margin: 4px 0 12px;
   }
 }
 

@@ -66,8 +66,8 @@ export const MONSTERS: MonsterTier[] = [
   { sprite: 'bat', name: 'Bat', minMinutes: 15, scale: 5, flying: true, menace: 0 },
   { sprite: 'skeleton', name: 'Skeleton', minMinutes: 25, scale: 6, menace: 0 },
   { sprite: 'gargoyle', name: 'Gargoyle', minMinutes: 45, scale: 6, flying: true, menace: 1 },
-  { sprite: 'demon', name: 'Demon Lord', minMinutes: 75, scale: 6, menace: 1 },
-  { sprite: 'demon', name: 'Archdemon', minMinutes: 120, scale: 7, menace: 2, dark: true },
+  { sprite: 'demon', name: 'Demon Lord', minMinutes: 75, scale: 5, menace: 1 },
+  { sprite: 'demon', name: 'Archdemon', minMinutes: 120, scale: 6, menace: 2, dark: true },
 ]
 
 export const HP_PER_MINUTE = 10
