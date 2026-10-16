@@ -1,0 +1,52 @@
+import type { Dispatch } from 'react'
+import { ITEMS, SLOT_LABEL } from '../game/data'
+import { bonusText } from '../game/logic'
+import type { Action } from '../game/reducer'
+import { sfx } from '../game/sound'
+import type { GameState, Slot } from '../game/types'
+import { CoinIcon } from './Sprites'
+
+export function ShopScreen({ state, dispatch }: { state: GameState; dispatch: Dispatch<Action> }) {
+  const { hero } = state
+  return (
+    <section className="panel shop">
+      <h2 className="panel-title">Merchant</h2>
+      <p className="hint">"Heh heh… what're ya studyin'?" Bought gear is equipped right away.</p>
+      {(Object.keys(SLOT_LABEL) as Slot[]).map((slot) => (
+        <div key={slot} className="shop-group">
+          <h3 className="shop-heading">{SLOT_LABEL[slot]}s</h3>
+          <ul className="shop-list">
+            {ITEMS.filter((i) => i.slot === slot).map((item) => {
+              const owned = state.inventory.includes(item.id)
+              const locked = hero.level < item.minLevel
+              const poor = hero.gold < item.price
+              return (
+                <li key={item.id} className={`shop-item ${owned ? 'owned' : ''} ${locked ? 'locked' : ''}`}>
+                  <span className="swatch" style={{ background: locked ? '#333' : item.color }} />
+                  <div className="shop-info">
+                    <span className="item-name">{locked ? `??? (LV ${item.minLevel})` : item.name}</span>
+                    <span className="item-desc">{locked ? 'Level up to reveal.' : item.description}</span>
+                    <span className="item-bonus">{bonusText(item)}</span>
+                  </div>
+                  <span className="price">
+                    <CoinIcon /> {item.price}
+                  </span>
+                  <button
+                    className="btn btn-small"
+                    disabled={owned || locked || poor}
+                    onClick={() => {
+                      if (state.settings.sound) sfx.buy()
+                      dispatch({ type: 'buy', itemId: item.id })
+                    }}
+                  >
+                    {owned ? 'Owned' : locked ? 'Locked' : poor ? 'Need gold' : 'Buy'}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ))}
+    </section>
+  )
+}

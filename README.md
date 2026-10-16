@@ -1,32 +1,23 @@
-# React + TypeScript + Vite
+# StudyRPG
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A pixel-art study timer (Pomodoro-style) where every finished study session is a battle won. Earn XP to level up your hero and gold to buy gear that boosts future rewards.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## How it plays
+
+- **Quest**: pick (or add) the subject you're studying, choose a length (presets or 1–180 min), and start. The bat's HP drains as time passes. Fleeing forfeits the loot.
+- **Rewards**: 4 XP and 1 gold per minute studied, multiplied by gear bonuses and a daily streak bonus (+5% per consecutive day, max +25%). Each level-up also grants bonus gold.
+- **Rests**: short rest after each quest, long rest every N quests (configurable).
+- **Hero / Shop**: weapons boost XP, armour boosts gold, relics boost both. Higher-tier items unlock by level.
+- **Log**: time per subject and a history of completed sessions.
+
+All progress is stored in the browser's `localStorage` under `studyrpg.save.v1`. Use **Config → Export / Import** to back it up or move it to another browser.
+
+## Code map
+
+- `src/game/` — pure game logic: types, item data, reward/level formulas, the reducer, storage, and the WebAudio chiptune sounds.
+- `src/components/` — one component per screen plus the pixel sprites (drawn from text grids as SVG).

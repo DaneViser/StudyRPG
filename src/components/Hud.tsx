@@ -1,0 +1,35 @@
+import { liveStreak, streakBonus, titleFor, xpToNext, percent } from '../game/logic'
+import type { GameState } from '../game/types'
+import { CoinIcon, FlameIcon, XpIcon } from './Sprites'
+
+export function Hud({ state, now }: { state: GameState; now: number }) {
+  const { hero } = state
+  const need = xpToNext(hero.level)
+  const streak = liveStreak(state.streak, now)
+  return (
+    <header className="hud panel">
+      <div className="hud-id">
+        <div className="hud-name">{hero.name}</div>
+        <div className="hud-title">
+          LV {hero.level} · {titleFor(hero.level)}
+        </div>
+      </div>
+      <div className="hud-xp">
+        <div className="bar-label">
+          <XpIcon /> EXP <span>{hero.xp} / {need}</span>
+        </div>
+        <div className="bar bar-xp">
+          <div className="bar-fill" style={{ width: `${(hero.xp / need) * 100}%` }} />
+        </div>
+      </div>
+      <div className="hud-stats">
+        <span className="stat" title="Gold">
+          <CoinIcon /> {hero.gold}
+        </span>
+        <span className="stat" title={`Daily streak: +${percent(streakBonus(streak))} XP`}>
+          <FlameIcon /> {streak}d
+        </span>
+      </div>
+    </header>
+  )
+}
