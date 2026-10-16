@@ -2,11 +2,13 @@ import {
   GOLD_PER_MINUTE,
   ITEM_BY_ID,
   LEVEL_UP_GOLD,
+  MONSTERS,
   STREAK_BONUS_CAP,
   STREAK_BONUS_PER_DAY,
   TITLES,
   XP_PER_MINUTE,
 } from './data'
+import { idleHeroBonus } from './idle'
 import type { GameState, Hero, Item, Phase, Settings } from './types'
 
 /** XP needed to go from `level` to `level + 1`. */
@@ -59,10 +61,17 @@ export function liveStreak(streak: GameState['streak'], now: number): number {
   return streak.lastDay === dayKey(now) || streak.lastDay === dayKey(yesterday.getTime()) ? streak.count : 0
 }
 
-export function sessionRewards(minutes: number, equipped: GameState['equipped'], streak: number) {
-  const gear = gearBonuses(equipped)
-  const xp = Math.round(minutes * XP_PER_MINUTE * (1 + gear.xp + streakBonus(streak)))
-  const gold = Math.round(minutes * GOLD_PER_MINUTE * (1 + gear.gold))
+/** Permanent hero bonuses from gear and siege upgrades (streak not included). */
+export function heroBonuses(state: Pick<GameState, 'equipped' | 'idle'>) {
+  const gear = gearBonuses(state.equipped)
+  const siege = idleHeroBonus(state.idle)
+  return { xp: gear.xp + siege.xp, gold: gear.gold + siege.gold }
+}
+
+export function sessionRewards(minutes: number, state: Pick<GameState, 'equipped' | 'idle'>, streak: number) {
+  const bonus = heroBonuses(state)
+  const xp = Math.round(minutes * XP_PER_MINUTE * (1 + bonus.xp + streakBonus(streak)))
+  const gold = Math.round(minutes * GOLD_PER_MINUTE * (1 + bonus.gold))
   return { xp, gold }
 }
 
@@ -112,4 +121,16 @@ export function bonusText(item: Item): string {
   if (item.xpBonus) parts.push(`+${percent(item.xpBonus)} XP`)
   if (item.goldBonus) parts.push(`+${percent(item.goldBonus)} Gold`)
   return parts.join('  ')
+}
+
+export function monsterFor(minutes: number) {
+  let tier = MONSTERS[0]
+  let rank = 0
+  MONSTERS.forEach((m, i) => {
+    if (minutes >= m.minMinutes) {
+      tier = m
+      rank = i + 1
+    }
+  })
+  return { tier, rank }
 }

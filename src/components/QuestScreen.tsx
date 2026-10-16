@@ -1,10 +1,12 @@
 import { useState, type Dispatch, type FormEvent } from 'react'
-import { SUBJECT_COLORS } from '../game/data'
-import { formatClock, formatMinutes, nextStreak, sessionRewards } from '../game/logic'
+import { HP_PER_MINUTE, SUBJECT_COLORS } from '../game/data'
+import { simulateIdle } from '../game/idle'
+import { formatClock, formatMinutes, monsterFor, nextStreak, sessionRewards } from '../game/logic'
 import type { Action } from '../game/reducer'
 import { sfx } from '../game/sound'
 import type { GameState } from '../game/types'
-import { BatSprite, HeroSprite } from './Sprites'
+import { SiegeScene } from './Siege'
+import { HeroSprite, MonsterSprite } from './Sprites'
 
 const PRESETS = [15, 25, 45, 60, 90]
 
@@ -32,6 +34,7 @@ export function QuestScreen({ state, dispatch, remainingMs, now }: Props) {
         {isFocus && !busy && <DurationPicker value={settings.focusMinutes} dispatch={dispatch} />}
         <Controls state={state} dispatch={dispatch} />
       </section>
+      <SiegePanel state={state} remainingMs={remainingMs} />
     </div>
   )
 }
@@ -104,23 +107,53 @@ function Battle({ state, remainingMs, now }: { state: GameState; remainingMs: nu
   const subject = state.subjects.find((s) => s.id === subjectId)
   const hp = timer.durationMs > 0 ? remainingMs / timer.durationMs : 1
   const running = timer.status === 'running'
+  const minutes = timer.durationMs / 60_000
+  const { tier, rank } = monsterFor(minutes)
+  const maxHp = Math.round(minutes * HP_PER_MINUTE)
   const streak = nextStreak(state.streak, now).count
-  const reward = sessionRewards(timer.durationMs / 60_000, state.equipped, streak)
+  const reward = sessionRewards(timer.durationMs / 60_000, state, streak)
 
   return (
-    <div className={`battle ${running ? 'fighting' : ''} ${timer.status === 'paused' ? 'paused' : ''}`}>
-      <div className="enemy">
-        <div className="enemy-name">{subject ? `${subject.name} Bat` : '???'}</div>
+    <div className={`battle menace-${tier.menace} ${running ? 'fighting' : ''} ${timer.status === 'paused' ? 'paused' : ''}`}>
+      <div className="enemy-info">
+        <div className="enemy-name">
+          {subject ? `${subject.name} ${tier.name}` : tier.name}
+          {tier.menace >= 2 && <span className="boss-tag">BOSS</span>}
+        </div>
         <div className="bar bar-hp">
           <div className="bar-fill" style={{ width: `${hp * 100}%` }} />
         </div>
-        <BatSprite color={subject?.color ?? '#555'} className="bat" />
+        <div className="enemy-meta">
+          <span className="hp-num">
+            HP {Math.ceil(hp * maxHp)}/{maxHp}
+          </span>
+          <span className="threat" aria-label={`Threat ${rank} of 6`}>
+            {'★'.repeat(rank)}
+            <span className="muted">{'★'.repeat(6 - rank)}</span>
+          </span>
+        </div>
+      </div>
+      <div className={`enemy-sprite ${tier.flying ? 'flying' : ''}`} key={tier.name}>
+        <MonsterSprite tier={tier} color={subject?.color ?? '#666'} className="monster" />
       </div>
       <HeroSprite equipped={state.equipped} className="hero-sprite" />
       <div className="loot-preview">
         Loot: <b className="xp">+{reward.xp} XP</b> <b className="gold">+{reward.gold} G</b>
       </div>
     </div>
+  )
+}
+
+function SiegePanel({ state, remainingMs }: { state: GameState; remainingMs: number }) {
+  const { timer } = state
+  const questing = timer.phase === 'focus' && timer.status !== 'idle'
+  const elapsed = questing ? (timer.durationMs - remainingMs) / 60_000 : 0
+  const live = questing ? simulateIdle(state.idle, elapsed) : null
+  return (
+    <section className="panel siege-panel">
+      <h2 className="panel-title">The Siege</h2>
+      <SiegeScene idle={live?.idle ?? state.idle} pending={live?.loot} active={timer.status === 'running' && questing} />
+    </section>
   )
 }
 

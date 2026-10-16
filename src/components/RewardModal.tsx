@@ -1,4 +1,5 @@
 import { useEffect, useRef, type Dispatch } from 'react'
+import { formatNum } from '../game/idle'
 import { formatMinutes, percent, streakBonus, titleFor } from '../game/logic'
 import type { Action } from '../game/reducer'
 import { sfx } from '../game/sound'
@@ -23,7 +24,10 @@ export function RewardModal({ reward, sound, dispatch }: { reward: RewardEvent; 
           Victory!
         </h2>
         <p>
-          You defeated the <b>{reward.subjectName} Bat</b> after {formatMinutes(reward.minutes)} of study.
+          You defeated the <b>
+            {reward.subjectName} {reward.monster ?? 'foe'}
+          </b>{' '}
+          after {formatMinutes(reward.minutes)} of study.
         </p>
         <ul className="loot">
           <li>
@@ -38,6 +42,19 @@ export function RewardModal({ reward, sound, dispatch }: { reward: RewardEvent; 
             </li>
           )}
         </ul>
+        {reward.siege && (
+          <div className="siege-report">
+            <div>
+              Your army gathered <span className="soul">◆ {formatNum(reward.siege.souls)} souls</span>
+            </div>
+            {reward.siege.keeps > 0 && (
+              <div>
+                {reward.siege.keeps} demon keep{reward.siege.keeps > 1 ? 's' : ''} razed! <span className="gold">+{reward.siege.gold} G</span>{' '}
+                <span className="xp">+{reward.siege.xp} XP</span>
+              </div>
+            )}
+          </div>
+        )}
         {leveled && (
           <div className="level-up">
             <div className="blink">LEVEL UP!</div>

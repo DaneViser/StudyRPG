@@ -498,7 +498,7 @@ input[type='number'] {
 
 .battle {
   position: relative;
-  height: 240px;
+  height: 320px;
   margin: 0 auto 10px;
   background:
     linear-gradient(transparent 78%, #2a1c50 78%, #2a1c50 82%, #1a1238 82%),
@@ -507,33 +507,125 @@ input[type='number'] {
   overflow: hidden;
 }
 
-.enemy {
+.enemy-info {
   position: absolute;
-  top: 18px;
-  right: 14%;
-  width: 180px;
+  top: 12px;
+  right: 12px;
+  width: 250px;
+  z-index: 2;
+  text-align: right;
+}
+
+.enemy-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
 }
 
 .enemy-name {
   font-family: var(--font-pixel);
   font-size: 9px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.bat {
-  margin-top: 16px;
+.boss-tag {
+  margin-left: 6px;
+  padding: 2px 4px;
+  background: var(--hp);
+  color: var(--text);
+  animation: blink 0.8s steps(1) infinite;
 }
 
-.fighting .bat {
+.threat {
+  color: var(--gold);
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.threat .muted {
+  color: #3a2c68;
+}
+
+.hp-num {
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.enemy-sprite {
+  position: absolute;
+  right: 16%;
+  bottom: 21%;
+  line-height: 0;
+  animation: enter 0.4s steps(4);
+}
+
+.enemy-sprite.flying {
+  bottom: 36%;
+}
+
+@keyframes enter {
+  from {
+    transform: translateX(60px);
+    opacity: 0;
+  }
+}
+
+.monster {
+  transform-origin: bottom center;
+}
+
+.fighting .monster {
+  animation: menace 0.9s steps(2) infinite;
+}
+
+.fighting .flying .monster {
   animation: flap 0.5s steps(2) infinite;
+}
+
+.menace-1 .monster {
+  filter: drop-shadow(0 0 6px rgba(200, 40, 255, 0.7));
+}
+
+.menace-2 .monster {
+  filter: drop-shadow(0 0 4px #ff3040) drop-shadow(0 0 14px rgba(255, 40, 60, 0.8));
+}
+
+.menace-2 {
+  background:
+    linear-gradient(transparent 78%, #3a1430 78%, #3a1430 82%, #200a20 82%),
+    repeating-linear-gradient(90deg, #2a1030 0 40px, #321238 40px 44px);
+}
+
+.fighting.menace-2 {
+  animation: quake 3s steps(1) infinite;
+}
+
+@keyframes menace {
+  50% {
+    transform: scale(1.04, 0.96);
+  }
 }
 
 @keyframes flap {
   50% {
     transform: translateY(-8px) scaleY(0.85);
+  }
+}
+
+@keyframes quake {
+  0%,
+  90% {
+    transform: none;
+  }
+  93% {
+    transform: translate(-3px, 1px);
+  }
+  96% {
+    transform: translate(3px, -1px);
   }
 }
 
@@ -552,7 +644,7 @@ input[type='number'] {
 }
 
 .paused .hero-sprite,
-.paused .bat {
+.paused .monster {
   animation: none;
   filter: grayscale(0.7);
 }
@@ -677,6 +769,261 @@ input[type='number'] {
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* ---------- Siege (idle) ---------- */
+
+.siege-panel {
+  grid-column: 1 / -1;
+}
+
+.siege {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  gap: 8px 16px;
+  min-height: 190px;
+  padding: 12px 12px 8px;
+  background:
+    linear-gradient(transparent 70%, #24183c 70%, #24183c 73%, #160e2a 73%),
+    linear-gradient(#1a1030, #2a1238);
+  border: var(--px) solid var(--ink);
+  overflow: hidden;
+}
+
+.siege-army {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  align-items: flex-end;
+  gap: 4px 14px;
+  padding-bottom: 14px;
+}
+
+.squad {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.squad-dragon {
+  margin-bottom: 50px;
+}
+
+.squad-count {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--gold);
+  margin-left: 4px;
+  text-shadow: 2px 2px 0 var(--ink);
+}
+
+.trooper {
+  animation: bob 1.6s steps(2) infinite;
+}
+
+.raiding .trooper {
+  animation: march 0.6s steps(2) infinite;
+}
+
+.raiding .squad-dragon .trooper {
+  animation: flap 0.5s steps(2) infinite;
+}
+
+.squad .trooper:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.squad .trooper:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes march {
+  50% {
+    transform: translate(4px, -3px);
+  }
+}
+
+.shots {
+  position: absolute;
+  inset: 0 180px 30% 30%;
+  pointer-events: none;
+}
+
+.shot {
+  position: absolute;
+  left: 0;
+  width: 10px;
+  height: 4px;
+  background: #e8e0c8;
+  animation: fly 2.2s linear infinite;
+  opacity: 0;
+}
+
+.shot-arrow {
+  width: 14px;
+  height: 2px;
+  background: #e8d0a0;
+  box-shadow: 4px 0 0 #ffffff;
+}
+
+.shot-fireball {
+  width: 8px;
+  height: 8px;
+  background: #ffb030;
+  box-shadow: 0 0 0 2px #ff5020;
+}
+
+.shot-boulder {
+  width: 8px;
+  height: 8px;
+  background: #6a8a7a;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+@keyframes fly {
+  0% {
+    left: 0;
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-28px);
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+
+.siege-keep {
+  width: 170px;
+  text-align: center;
+}
+
+.keep-name {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.bar-keep {
+  height: 12px;
+  margin-bottom: 8px;
+}
+
+.bar-keep .bar-fill {
+  background: repeating-linear-gradient(90deg, #b040e0 0 12px, #7a28a8 12px 16px);
+}
+
+.keep-body {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  animation: rise 0.8s steps(4);
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+.keep.under-fire {
+  animation: hit 1.1s steps(1) infinite;
+}
+
+@keyframes hit {
+  80% {
+    transform: none;
+    filter: none;
+  }
+  85% {
+    transform: translateX(2px);
+    filter: brightness(1.6);
+  }
+}
+
+.keep-fire {
+  position: absolute;
+  width: 14px;
+  height: 18px;
+  background: #f86030;
+  box-shadow: inset 0 -7px 0 #ffe040;
+  clip-path: polygon(50% 0, 70% 35%, 100% 40%, 100% 100%, 0 100%, 0 40%, 30% 35%);
+  transform-origin: bottom;
+  animation: fire 0.4s steps(2) infinite;
+}
+
+.keep-fire.f1 {
+  left: 10px;
+  top: 4px;
+}
+
+.keep-fire.f2 {
+  right: 14px;
+  top: 30px;
+  animation-delay: 0.2s;
+}
+
+.siege-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 20px;
+}
+
+.soul {
+  color: #c890ff;
+}
+
+.pending {
+  color: #c890ff;
+}
+
+.siege-report {
+  margin: 0 0 16px;
+  display: grid;
+  gap: 4px;
+}
+
+.army-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.siege-stats {
+  margin-top: 14px;
+}
+
+.unit-icon {
+  width: 40px;
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-family: var(--font-pixel);
+  font-size: 14px;
+}
+
+.unit-icon svg {
+  max-width: 40px;
+  height: auto;
+}
+
+.soul-price {
+  color: #c890ff;
 }
 
 /* ---------- Hero / shop / log / config ---------- */
@@ -968,6 +1315,7 @@ input[type='number'] {
   }
 
   .quest-layout,
+  .army-layout,
   .hero-layout,
   .log-layout,
   .config-layout {
@@ -978,9 +1326,30 @@ input[type='number'] {
     order: -1;
   }
 
-  .enemy {
-    right: 6%;
-    width: 140px;
+  .enemy-info {
+    width: 190px;
+  }
+
+  .enemy-sprite {
+    right: 4%;
+  }
+
+  .monster {
+    max-width: 150px;
+    height: auto;
+  }
+
+  .siege-keep {
+    width: 120px;
+  }
+
+  .siege-keep svg {
+    width: 104px;
+    height: auto;
+  }
+
+  .shots {
+    right: 120px;
   }
 
   .battle .hero-sprite {

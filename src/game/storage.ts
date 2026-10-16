@@ -16,6 +16,7 @@ export function normalizeSave(raw: unknown): GameState | null {
     equipped: { ...base.equipped, ...save.equipped },
     streak: { ...base.streak, ...save.streak },
     timer: { ...base.timer, ...save.timer },
+    idle: { ...base.idle, ...save.idle },
     subjects: Array.isArray(save.subjects) ? save.subjects : [],
     inventory: Array.isArray(save.inventory) ? save.inventory : [],
     history: Array.isArray(save.history) ? save.history : [],

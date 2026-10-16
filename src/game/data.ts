@@ -47,3 +47,27 @@ export const STREAK_BONUS_PER_DAY = 0.05
 export const STREAK_BONUS_CAP = 0.25
 export const LEVEL_UP_GOLD = 20
 export const HISTORY_LIMIT = 200
+
+export interface MonsterTier {
+  sprite: 'slime' | 'bat' | 'skeleton' | 'gargoyle' | 'demon'
+  name: string
+  /** Session length (minutes) at which this foe appears */
+  minMinutes: number
+  scale: number
+  flying?: boolean
+  /** Visual intensity: 0 none, 1 aura, 2 boss aura + shake */
+  menace: number
+  dark?: boolean
+}
+
+/** Longer sessions summon tougher foes; capped at the Archdemon. */
+export const MONSTERS: MonsterTier[] = [
+  { sprite: 'slime', name: 'Slime', minMinutes: 1, scale: 5, menace: 0 },
+  { sprite: 'bat', name: 'Bat', minMinutes: 15, scale: 5, flying: true, menace: 0 },
+  { sprite: 'skeleton', name: 'Skeleton', minMinutes: 25, scale: 6, menace: 0 },
+  { sprite: 'gargoyle', name: 'Gargoyle', minMinutes: 45, scale: 6, flying: true, menace: 1 },
+  { sprite: 'demon', name: 'Demon Lord', minMinutes: 75, scale: 6, menace: 1 },
+  { sprite: 'demon', name: 'Archdemon', minMinutes: 120, scale: 7, menace: 2, dark: true },
+]
+
+export const HP_PER_MINUTE = 10

@@ -1,13 +1,13 @@
 import type { Dispatch } from 'react'
 import { ITEM_BY_ID, ITEMS, SLOT_LABEL } from '../game/data'
-import { bonusText, gearBonuses, liveStreak, percent, streakBonus, titleFor, xpToNext } from '../game/logic'
+import { bonusText, heroBonuses, liveStreak, percent, streakBonus, titleFor, xpToNext } from '../game/logic'
 import type { Action } from '../game/reducer'
 import type { GameState, Slot } from '../game/types'
 import { HeroSprite } from './Sprites'
 
 export function HeroScreen({ state, dispatch, now }: { state: GameState; dispatch: Dispatch<Action>; now: number }) {
   const { hero, equipped } = state
-  const gear = gearBonuses(equipped)
+  const gear = heroBonuses(state)
   const streak = liveStreak(state.streak, now)
   const totalMinutes = state.subjects.reduce((sum, s) => sum + s.minutes, 0)
   const owned = ITEMS.filter((i) => state.inventory.includes(i.id))

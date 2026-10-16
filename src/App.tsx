@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ArmyScreen } from './components/ArmyScreen'
 import { ConfigScreen } from './components/ConfigScreen'
 import { HeroScreen } from './components/HeroScreen'
 import { Hud } from './components/Hud'
@@ -11,6 +12,7 @@ import { useGame } from './game/useGame'
 const TABS = [
   { id: 'quest', label: 'Quest' },
   { id: 'hero', label: 'Hero' },
+  { id: 'army', label: 'Army' },
   { id: 'shop', label: 'Shop' },
   { id: 'log', label: 'Log' },
   { id: 'config', label: 'Config' },
@@ -44,6 +46,7 @@ export default function App() {
         </nav>
         {tab === 'quest' && <QuestScreen state={state} dispatch={dispatch} remainingMs={remainingMs} now={now} />}
         {tab === 'hero' && <HeroScreen state={state} dispatch={dispatch} now={now} />}
+        {tab === 'army' && <ArmyScreen state={state} dispatch={dispatch} />}
         {tab === 'shop' && <ShopScreen state={state} dispatch={dispatch} />}
         {tab === 'log' && <LogScreen state={state} dispatch={dispatch} />}
         {tab === 'config' && <ConfigScreen state={state} dispatch={dispatch} />}

@@ -1,5 +1,6 @@
 import { HISTORY_LIMIT, ITEM_BY_ID } from './data'
-import { addXp, nextStreak, phaseMinutes, sessionRewards } from './logic'
+import { createIdleState, simulateIdle, UNITS, unitCost, unitUnlocked, UPGRADE_BY_ID, upgradeVisible } from './idle'
+import { addXp, monsterFor, nextStreak, phaseMinutes, sessionRewards } from './logic'
 import type { GameState, Phase, Settings, Slot, TimerState } from './types'
 
 export type Action =
@@ -15,6 +16,8 @@ export type Action =
   | { type: 'skipBreak' }
   | { type: 'complete'; now: number; recordId: string }
   | { type: 'buy'; itemId: string }
+  | { type: 'recruit'; unitId: string }
+  | { type: 'buyUpgrade'; upgradeId: string }
   | { type: 'equip'; itemId: string }
   | { type: 'unequip'; slot: Slot }
   | { type: 'dismissReward' }
@@ -23,6 +26,11 @@ export type Action =
 function idleTimer(phase: Phase, settings: Settings, focusCount: number): TimerState {
   const ms = phaseMinutes(phase, settings) * 60_000
   return { phase, status: 'idle', endsAt: null, remainingMs: ms, durationMs: ms, subjectId: null, focusCount }
+}
+
+/** The army can't be changed mid-quest: the siege is settled using the army you started with. */
+export function siegeLocked(state: GameState): boolean {
+  return state.timer.phase === 'focus' && state.timer.status !== 'idle'
 }
 
 export function createInitialState(): GameState {
@@ -48,6 +56,7 @@ export function createInitialState(): GameState {
     streak: { count: 0, lastDay: null },
     timer: idleTimer('focus', settings, 0),
     reward: null,
+    idle: createIdleState(),
   }
 }
 
@@ -119,8 +128,9 @@ export function gameReducer(state: GameState, action: Action): GameState {
 
       const minutes = timer.durationMs / 60_000
       const streak = nextStreak(state.streak, timer.endsAt)
-      const { xp, gold } = sessionRewards(minutes, state.equipped, streak.count)
-      const leveled = addXp({ ...state.hero, gold: state.hero.gold + gold }, xp)
+      const { xp, gold } = sessionRewards(minutes, state, streak.count)
+      const siege = simulateIdle(state.idle, minutes)
+      const leveled = addXp({ ...state.hero, gold: state.hero.gold + gold + siege.loot.gold }, xp + siege.loot.xp)
       const subject = state.subjects.find((s) => s.id === timer.subjectId)
       const subjectName = subject?.name ?? 'Unknown'
 
@@ -144,7 +154,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
           ...state.history,
         ].slice(0, HISTORY_LIMIT),
         timer: nextTimer,
+        idle: siege.idle,
         reward: {
+          siege: siege.loot,
+          monster: monsterFor(minutes).tier.name,
           xp,
           gold,
           levelBonusGold: leveled.levelBonusGold,
@@ -177,6 +190,29 @@ export function gameReducer(state: GameState, action: Action): GameState {
 
     case 'unequip':
       return { ...state, equipped: { ...state.equipped, [action.slot]: null } }
+
+    case 'recruit': {
+      if (siegeLocked(state)) return state
+      const index = UNITS.findIndex((u) => u.id === action.unitId)
+      if (index < 0 || !unitUnlocked(state.idle, index)) return state
+      const owned = state.idle.units[action.unitId] ?? 0
+      const cost = unitCost(UNITS[index], owned)
+      if (state.idle.souls < cost) return state
+      return {
+        ...state,
+        idle: { ...state.idle, souls: state.idle.souls - cost, units: { ...state.idle.units, [action.unitId]: owned + 1 } },
+      }
+    }
+
+    case 'buyUpgrade': {
+      if (siegeLocked(state)) return state
+      const up = UPGRADE_BY_ID[action.upgradeId]
+      if (!up || state.idle.upgrades.includes(up.id) || !upgradeVisible(state.idle, up) || state.idle.souls < up.cost) return state
+      return {
+        ...state,
+        idle: { ...state.idle, souls: state.idle.souls - up.cost, upgrades: [...state.idle.upgrades, up.id] },
+      }
+    }
 
     case 'dismissReward':
       return { ...state, reward: null }

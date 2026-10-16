@@ -62,7 +62,28 @@ export interface SessionRecord {
   completedAt: number
 }
 
+export interface IdleState {
+  /** Spendable souls (fractional internally) */
+  souls: number
+  totalSouls: number
+  units: Record<string, number>
+  upgrades: string[]
+  /** Level of the demon keep currently under siege (1-based) */
+  keepLevel: number
+  /** Damage dealt to the current keep */
+  keepDamage: number
+}
+
+export interface SiegeLoot {
+  souls: number
+  keeps: number
+  gold: number
+  xp: number
+}
+
 export interface RewardEvent {
+  siege: SiegeLoot
+  monster?: string
   xp: number
   gold: number
   levelBonusGold: number
@@ -94,4 +115,5 @@ export interface GameState {
   streak: { count: number; lastDay: string | null }
   timer: TimerState
   reward: RewardEvent | null
+  idle: IdleState
 }
