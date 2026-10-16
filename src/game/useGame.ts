@@ -6,7 +6,8 @@ import { loadGame, saveGame } from './storage'
 
 const PHASE_LABEL = { focus: 'Quest', short: 'Rest', long: 'Camp' } as const
 
-export function useGame() {
+/** `speed` > 1 (dev tools) makes running phases elapse faster by pulling their end time closer each tick. */
+export function useGame(speed = 1) {
   const [state, dispatch] = useReducer(gameReducer, undefined, loadGame)
   const [now, setNow] = useState(() => Date.now())
   const { timer, settings } = state
@@ -17,9 +18,15 @@ export function useGame() {
   // Tick while running; time is derived from endsAt so background tabs stay accurate
   useEffect(() => {
     if (timer.status !== 'running') return
-    const id = setInterval(() => setNow(Date.now()), 250)
+    let last = Date.now()
+    const id = setInterval(() => {
+      const t = Date.now()
+      if (speed > 1) dispatch({ type: 'dev', dev: { op: 'warp', ms: (t - last) * (speed - 1) } })
+      last = t
+      setNow(t)
+    }, 250)
     return () => clearInterval(id)
-  }, [timer.status])
+  }, [timer.status, speed])
 
   useEffect(() => {
     if (timer.status !== 'running' || timer.endsAt === null || timer.endsAt > now) return

@@ -1,4 +1,5 @@
 import { HISTORY_LIMIT, ITEM_BY_ID } from './data'
+import { devReducer, type DevOp } from './dev'
 import { createIdleState, simulateIdle, UNITS, unitCost, unitUnlocked, UPGRADE_BY_ID, upgradeVisible } from './idle'
 import { addXp, monsterFor, nextStreak, phaseMinutes, sessionRewards } from './logic'
 import type { GameState, Phase, Settings, Slot, TimerState } from './types'
@@ -22,6 +23,7 @@ export type Action =
   | { type: 'unequip'; slot: Slot }
   | { type: 'dismissReward' }
   | { type: 'load'; state: GameState }
+  | { type: 'dev'; dev: DevOp }
 
 function idleTimer(phase: Phase, settings: Settings, focusCount: number): TimerState {
   const ms = phaseMinutes(phase, settings) * 60_000
@@ -57,6 +59,39 @@ export function createInitialState(): GameState {
     timer: idleTimer('focus', settings, 0),
     reward: null,
     idle: createIdleState(),
+  }
+}
+
+/**
+ * Pays out a won study session of `minutes`: hero XP/gold, streak, subject totals,
+ * history, siege progress and the Victory dialog. Leaves the timer untouched.
+ */
+export function grantSession(state: GameState, minutes: number, subjectId: string | null, at: number, recordId: string): GameState {
+  const streak = nextStreak(state.streak, at)
+  const { xp, gold } = sessionRewards(minutes, state, streak.count)
+  const siege = simulateIdle(state.idle, minutes)
+  const leveled = addXp({ ...state.hero, gold: state.hero.gold + gold + siege.loot.gold }, xp + siege.loot.xp)
+  const subjectName = state.subjects.find((s) => s.id === subjectId)?.name ?? 'Unknown'
+
+  return {
+    ...state,
+    hero: leveled.hero,
+    streak,
+    subjects: state.subjects.map((s) => (s.id === subjectId ? { ...s, minutes: s.minutes + minutes, sessions: s.sessions + 1 } : s)),
+    history: [{ id: recordId, subjectId: subjectId ?? '', subjectName, minutes, xp, gold, completedAt: at }, ...state.history].slice(0, HISTORY_LIMIT),
+    idle: siege.idle,
+    reward: {
+      siege: siege.loot,
+      monster: monsterFor(minutes).tier.name,
+      xp,
+      gold,
+      levelBonusGold: leveled.levelBonusGold,
+      fromLevel: state.hero.level,
+      toLevel: leveled.hero.level,
+      streak: streak.count,
+      subjectName,
+      minutes,
+    },
   }
 }
 
@@ -127,12 +162,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       }
 
       const minutes = timer.durationMs / 60_000
-      const streak = nextStreak(state.streak, timer.endsAt)
-      const { xp, gold } = sessionRewards(minutes, state, streak.count)
-      const siege = simulateIdle(state.idle, minutes)
-      const leveled = addXp({ ...state.hero, gold: state.hero.gold + gold + siege.loot.gold }, xp + siege.loot.xp)
-      const subject = state.subjects.find((s) => s.id === timer.subjectId)
-      const subjectName = subject?.name ?? 'Unknown'
+      const rewarded = grantSession(state, minutes, timer.subjectId, timer.endsAt, action.recordId)
 
       const focusCount = timer.focusCount + 1
       const longBreak = focusCount >= state.settings.sessionsBeforeLongBreak
@@ -141,33 +171,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
       if (state.settings.autoStartBreaks) {
         nextTimer = { ...nextTimer, status: 'running', endsAt: action.now + nextTimer.remainingMs }
       }
-
-      return {
-        ...state,
-        hero: leveled.hero,
-        streak,
-        subjects: state.subjects.map((s) =>
-          s.id === timer.subjectId ? { ...s, minutes: s.minutes + minutes, sessions: s.sessions + 1 } : s,
-        ),
-        history: [
-          { id: action.recordId, subjectId: timer.subjectId ?? '', subjectName, minutes, xp, gold, completedAt: timer.endsAt },
-          ...state.history,
-        ].slice(0, HISTORY_LIMIT),
-        timer: nextTimer,
-        idle: siege.idle,
-        reward: {
-          siege: siege.loot,
-          monster: monsterFor(minutes).tier.name,
-          xp,
-          gold,
-          levelBonusGold: leveled.levelBonusGold,
-          fromLevel: state.hero.level,
-          toLevel: leveled.hero.level,
-          streak: streak.count,
-          subjectName,
-          minutes,
-        },
-      }
+      return { ...rewarded, timer: nextTimer }
     }
 
     case 'buy': {
@@ -219,5 +223,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
 
     case 'load':
       return action.state
+
+    case 'dev':
+      return devReducer(state, action.dev)
   }
 }

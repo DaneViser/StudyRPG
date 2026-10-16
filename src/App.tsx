@@ -7,6 +7,8 @@ import { LogScreen } from './components/LogScreen'
 import { QuestScreen } from './components/QuestScreen'
 import { RewardModal } from './components/RewardModal'
 import { ShopScreen } from './components/ShopScreen'
+import { DevPanel } from './dev/DevPanel'
+import { useDevMode } from './dev/useDevMode'
 import { useGame } from './game/useGame'
 
 const TABS = [
@@ -21,7 +23,8 @@ const TABS = [
 type Tab = (typeof TABS)[number]['id']
 
 export default function App() {
-  const { state, dispatch, remainingMs, now } = useGame()
+  const dev = useDevMode()
+  const { state, dispatch, remainingMs, now } = useGame(dev.speed)
   const [tab, setTab] = useState<Tab>('quest')
 
   return (
@@ -53,6 +56,12 @@ export default function App() {
         {tab === 'log' && <LogScreen state={state} dispatch={dispatch} />}
         {tab === 'config' && <ConfigScreen state={state} dispatch={dispatch} />}
       </main>
+      {dev.unlocked && !dev.open && (
+        <button className={`dev-fab ${dev.speed > 1 ? 'fast' : ''}`} onClick={() => dev.setOpen(true)} title="Developer tools (`)">
+          DEV{dev.speed > 1 && ` ×${dev.speed}`}
+        </button>
+      )}
+      {dev.open && <DevPanel state={state} dispatch={dispatch} dev={dev} remainingMs={remainingMs} />}
       {state.reward && <RewardModal reward={state.reward} sound={state.settings.sound} dispatch={dispatch} />}
     </div>
   )

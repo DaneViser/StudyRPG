@@ -180,11 +180,27 @@ Cost grows **×1.15** per troop owned of that type. A troop type is revealed aft
 - **Save data** lives in this browser only (localStorage). **Export** downloads a JSON backup; **Import** loads one; **New Game** wipes everything (with confirmation).
 - The log keeps the last 200 sessions (shows 50).
 
-## 10. Where to play
+## 10. Developer tools (hidden)
+
+A debug console for testing and previewing late-game content without waiting. Normal players never see it.
+
+- **Unlock:** always on with the local dev server (`npm run dev`). On the live site, open it once with `?dev` (https://daneviser.github.io/StudyRPG/?dev). This browser remembers it; **Hide dev tools** in the console (or `?dev=0`) turns it off again.
+- **Open/close:** the green **DEV** button (bottom-right) or the <kbd>`</kbd> key; <kbd>Esc</kbd> closes. While the clock is sped up the button blinks and shows the speed (e.g. `DEV ×300`).
+
+| Section | Tools |
+|---|---|
+| Time | **Clock speed** ×1 / ×10 / ×60 / ×300 / ×1000 for running quests and rests (the siege speeds up too). **Skip ahead** +1 / +5 / +15 min, **Finish now**. **Simulate study** 25m / 1h / 4h / 1 day / 1 week: an instant win paid out by the normal rules (rewards, siege, Victory dialog), using the selected subject. |
+| Hero | Gold +100 / +1K / +10K / +1M · XP +100 / +1K / +10K / +100K (normal level-ups) · set level 1–99 · streak 0 / 3 / 6 days · **All gear** into inventory. |
+| Siege | Souls +1K / +100K / +10M / +1B · +1 / +10 / +100 of every troop · **All upgrades** · **Raze** 1 / 10 keeps (loot paid). |
+| Snapshot | **Save** the whole game state, **Restore** it later to undo experiments (one slot, stored in this browser). |
+
+Dev tool changes are real changes to your save. Take a snapshot first if you want to go back.
+
+## 11. Where to play
 
 https://daneviser.github.io/StudyRPG/ (updates automatically after each push to `master`). Every player has their own save in their own browser.
 
-## 11. Look & feel
+## 12. Look & feel
 
 8/16-bit castle-at-night style: pixel fonts (Press Start 2P, VT323), hand-made pixel sprites, moon and castle silhouette, twinkling stars, chunky pixel borders, optional scanlines. Animations respect the OS "reduce motion" setting. Layout fits on one screen on most desktops and stacks on phones.
 

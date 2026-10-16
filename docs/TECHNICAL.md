@@ -36,10 +36,11 @@ src/
     data.ts           Static content: gear, titles, monster tiers, reward constants
     logic.ts          Formulas: XP curve, rewards, bonuses, streaks, monster lookup, formatting
     idle.ts           Siege: troops, upgrades, keep HP/loot, simulateIdle(), formatNum()
-    reducer.ts        createInitialState(), gameReducer(), Action union, siegeLocked()
+    reducer.ts        createInitialState(), gameReducer(), Action union, grantSession(), siegeLocked()
     storage.ts        loadGame / saveGame / normalizeSave / clearSave (localStorage)
     sound.ts          Chiptune sfx
-    useGame.ts        Hook: reducer + persistence + ticking clock + completion side effects
+    useGame.ts        Hook: reducer + persistence + ticking clock (+ dev speed) + completion side effects
+    dev.ts            DevOp union + devReducer(): pure cheat transforms (grant, warp, simulate, …)
   components/
     Hud.tsx           Name, level/title, XP bar, gold, streak
     QuestScreen.tsx   Battle, Camp (rest), SiegePanel, timer panel, DurationPicker, Controls, SubjectPicker
@@ -51,6 +52,9 @@ src/
     ConfigScreen.tsx  Settings, export/import/reset
     RewardModal.tsx   Victory dialog
     Sprites.tsx       PixelSprite renderer + all sprite grids (hero, monsters, troops, keep, icons)
+  dev/
+    useDevMode.ts     Dev-tools unlock (?dev / dev server), open state, clock speed, ` hotkey
+    DevPanel.tsx      Debug console drawer + snapshot save/restore
 docs/                 GAME_FEATURES.md (player-facing), TECHNICAL.md (this file)
 .github/workflows/    deploy.yml: build + publish to GitHub Pages
 vite.config.ts        React plugin, `base: './'` (relative asset paths)
@@ -89,12 +93,21 @@ vite.config.ts        React plugin, `base: './'` (relative asset paths)
 - Recruiting and upgrades are rejected while `siegeLocked(state)` (focus phase not idle), so the army used for the live preview equals the army used at payout.
 - Souls are stored as floats; display uses `formatNum` (floors, K/M/B/T suffixes).
 
-### 3.3 Rewards pipeline (`reducer.ts` → `complete`)
+### 3.3 Rewards pipeline (`reducer.ts` → `complete` → `grantSession`)
 1. `streak = nextStreak(state.streak, endsAt)`
 2. `sessionRewards(minutes, state, streak.count)` → XP/gold with `heroBonuses()` (gear + siege hero upgrades) and streak bonus
 3. `simulateIdle(state.idle, minutes)` → souls, keeps, keep gold/XP
 4. `addXp(hero + gold, sessionXp + keepXp)` → level-ups (+20 × level gold each)
-5. Update subject totals, prepend a `SessionRecord` (history capped at `HISTORY_LIMIT` = 200), move timer to short/long rest (optionally auto-started), set `state.reward` for the modal.
+5. Update subject totals, prepend a `SessionRecord` (history capped at `HISTORY_LIMIT` = 200), set `state.reward` for the modal.
+
+Steps 1–5 live in `grantSession(state, minutes, subjectId, at, recordId)`, which never touches the timer. `complete` calls it and then moves the timer to a short/long rest (optionally auto-started). The dev "Simulate study" tool calls the same function, so simulated sessions follow the real rules.
+
+### 3.4 Developer tools
+- **Actions:** one wrapper action `{ type: 'dev', dev: DevOp }` delegates to `devReducer` in `game/dev.ts`. It is pure like the main reducer (`now`/ids in the payload) and reuses real rules (`grantSession`, `addXp`, `keepLoot`).
+- **Clock speed:** `useGame(speed)`. On each 250 ms tick of a running phase it dispatches `dev/warp` with `elapsed × (speed − 1)` ms, which pulls `timer.endsAt` closer. Everything downstream (remaining time, live siege, completion) works unchanged.
+- **Unlock & prefs:** `useDevMode()` keeps `{ unlocked, speed }` in localStorage key `studyrpg.dev` (separate from the save, so it never syncs to a future backend). It is unlocked when `import.meta.env.DEV`, or when the URL has `?dev` (`?dev=0` locks). Speed is forced to 1 while locked.
+- **Snapshot:** one slot in `studyrpg.dev.snapshot` (`{ at, state }`), restored through `normalizeSave` + `load`.
+- **Not a security boundary:** the code ships in the production bundle and anyone can add `?dev`. That's fine for a local single-player game. With accounts (§9), dev ops must be rejected server-side (or the dev bundle excluded from production).
 
 ---
 
@@ -135,7 +148,8 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 | `buy` / `equip` / `unequip` | itemId / slot | buy checks gold + level, auto-equips |
 | `recruit` / `buyUpgrade` | unitId / upgradeId | blocked by `siegeLocked` |
 | `dismissReward` | | |
-| `load` | state | import / New Game |
+| `load` | state | import / New Game / dev snapshot restore |
+| `dev` | dev: `DevOp` | developer tools, see §3.4 |
 
 ---
 
