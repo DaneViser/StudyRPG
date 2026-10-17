@@ -149,7 +149,7 @@ function Battle({ state, remainingMs, now }: { state: GameState; remainingMs: nu
         <span className="slash" aria-hidden="true" />
       </div>
       {tier.sprite === 'demon' && <span className={`fireball ${tier.dark ? 'big' : ''}`} aria-hidden="true" />}
-      <HeroSprite equipped={state.equipped} className="hero-sprite" />
+      <HeroSprite equipped={state.equipped} gender={state.hero.gender} className="hero-sprite" />
       <div className="loot-preview">
         Loot: <b className="xp">+{reward.xp} XP</b> <b className="gold">+{reward.gold} G</b>
       </div>
@@ -183,7 +183,7 @@ function Camp({ state, remainingMs }: { state: GameState; remainingMs: number })
       <div className="campfire" aria-hidden="true">
         <span />
       </div>
-      <HeroSprite equipped={state.equipped} className="hero-sprite resting" />
+      <HeroSprite equipped={state.equipped} gender={state.hero.gender} className="hero-sprite resting" />
     </div>
   )
 }

@@ -108,8 +108,12 @@ export interface RewardEvent {
   minutes: number
 }
 
+export type Gender = 'male' | 'female'
+
 export interface Hero {
   name: string
+  /** Which hero sprite to draw (cosmetic only) */
+  gender: Gender
   level: number
   /** XP progress inside the current level */
   xp: number

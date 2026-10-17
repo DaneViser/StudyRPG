@@ -2,7 +2,12 @@ import type { Dispatch } from 'react'
 import { ITEM_BY_ID, ITEMS, SLOT_LABEL } from '../game/data'
 import { bonusText, gearBonuses, heroBonuses, liveStreak, percent, streakBonus, titleFor, xpToNext } from '../game/logic'
 import type { Action } from '../game/reducer'
-import type { GameState, Slot } from '../game/types'
+import type { GameState, Gender, Slot } from '../game/types'
+
+const GENDERS: [Gender, string][] = [
+  ['male', '♂ Male'],
+  ['female', '♀ Female'],
+]
 import { HeroSprite } from './Sprites'
 
 export function HeroScreen({ state, dispatch, now }: { state: GameState; dispatch: Dispatch<Action>; now: number }) {
@@ -17,7 +22,20 @@ export function HeroScreen({ state, dispatch, now }: { state: GameState; dispatc
       <section className="panel hero-card">
         <h2 className="panel-title">Status</h2>
         <div className="hero-portrait">
-          <HeroSprite equipped={equipped} scale={9} className="hero-sprite" />
+          <HeroSprite equipped={equipped} gender={hero.gender} scale={9} className="hero-sprite" />
+        </div>
+        <div className="gender-switch" role="radiogroup" aria-label="Hero look">
+          {GENDERS.map(([g, label]) => (
+            <button
+              key={g}
+              role="radio"
+              aria-checked={hero.gender === g}
+              className={`btn btn-small ${hero.gender === g ? 'on' : ''}`}
+              onClick={() => dispatch({ type: 'setGender', gender: g })}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         <div className="hero-name-big">{hero.name}</div>
         <div className="hero-title">{titleFor(hero.level)}</div>

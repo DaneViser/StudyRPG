@@ -128,7 +128,7 @@ Steps 1–5 live in `grantSession(state, minutes, subjectId, at, recordId)`, whi
 ```ts
 GameState {
   version: 1
-  hero:      { name, level, xp /*into current level*/, totalXp, gold }
+  hero:      { name, gender: 'male'|'female', level, xp /*into current level*/, totalXp, gold }
   subjects:  Subject[]          // { id, name, color, minutes, sessions }
   selectedSubjectId: string | null
   settings:  { focusMinutes, shortBreakMinutes, longBreakMinutes, sessionsBeforeLongBreak,
@@ -152,6 +152,7 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 | Action | Payload | Notes |
 |---|---|---|
 | `setName` | name | max 16 chars |
+| `setGender` | gender | hero sprite look, cosmetic |
 | `addSubject` / `removeSubject` / `selectSubject` | id, name, color | remove blocked for the running quest's subject |
 | `updateSettings` | patch | reshapes timer only when idle |
 | `start` / `pause` / `resume` | now | start requires a selected subject in focus phase |
@@ -206,7 +207,7 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 - Every combat keyframe shares one **2.4 s loop, `steps(24)`**: the hero strikes at ~16–24% (foe flashes at 20%), the foe hits at ~64–70% (hero flashes at 70% and 78%). Keep new foes on that timeline.
 - Horizontal travel uses **`cqw`** (the stage is `container-type: inline-size`), so lunges meet in the middle at any width. Vertical offsets stay in px.
 - `.paused` stops everything; `prefers-reduced-motion` disables all animation.
-- Hero sprite: 18×22 grid, palette keys documented above `HERO` in `Sprites.tsx`. `HeroSprite` wraps the svg in `.hero-wrap` and adds `.mythic` + `--aura` when a mythic item is equipped.
+- Hero sprites: `HERO` (male) and `HEROINE` (female), both 18×22 with the sword in the same columns so animations and effects line up. Palette keys are documented above each grid in `Sprites.tsx`; `HeroSprite` picks the grid from `hero.gender`. `HeroSprite` wraps the svg in `.hero-wrap` and adds `.mythic` + `--aura` when a mythic item is equipped.
 
 **Sprites:** each sprite is an array of equal-length strings; each char maps to a colour in a palette (`.` = transparent). `PixelSprite` merges horizontal runs into `<rect>`s. Keep widths consistent (a quick script check is worth it).
 

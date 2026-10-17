@@ -1571,6 +1571,13 @@ input[type='number'] {
   background: radial-gradient(circle, #3a2c78 0 45%, transparent 46%);
 }
 
+.gender-switch {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .hero-name-big {
   font-family: var(--font-pixel);
   font-size: 16px;

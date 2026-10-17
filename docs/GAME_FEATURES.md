@@ -23,7 +23,7 @@ Nothing needs clicking while studying. The game is designed to run in the backgr
 | Tab | What's there |
 |---|---|
 | **Quest** | Battle stage, siege scene, timer + controls, subject picker. On desktop the battle and siege are visible together. |
-| **Hero** | Hero sprite with equipped gear, stats, equipment slots, inventory (equip/remove). |
+| **Hero** | Hero sprite with equipped gear, **♂ Male / ♀ Female** look switch, stats, equipment slots, inventory (equip/remove). |
 | **Army** | Siege overview and stats, recruit troops, War Council upgrades. |
 | **Shop** | Buy gear with gold. |
 | **Log** | Time per subject (Bestiary) and recent completed sessions (Adventure Log). Delete subjects here. |
@@ -114,6 +114,8 @@ Shows XP, gold, streak bonus, siege report (souls, keeps razed with their loot) 
 ## 7. Gear (Shop, paid in gold)
 
 Three slots, browsed with the Shop's Weapons / Armors / Relics tabs. **Weapons boost XP, armor boosts gold, relics boost both, and every item above wood also strengthens the siege army** (+% army power, i.e. more souls and keep damage). Bought items are equipped immediately; owned items can be swapped on the Hero tab. Items above your level show as `??? (LV n)`.
+
+**Hero look:** switch between the male knight and the female heroine on the Hero tab at any time (purely cosmetic). The heroine has flowing golden hair, a tiara (its gem takes the relic's colour, pink with no relic), eyelashes, blush and a pleated armour skirt. Both use the same gear colours, animations and mythic glow.
 
 Gear changes the hero's look: armor colours the suit (with computed light/shade), the weapon colours the blade, the relic colours the belt gem. A **mythic relic** also recolours the cape and plume, and **any mythic item makes the hero glow** in that item's colour.
 

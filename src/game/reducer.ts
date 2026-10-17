@@ -2,10 +2,11 @@ import { HISTORY_LIMIT, ITEM_BY_ID } from './data'
 import { devReducer, type DevOp } from './dev'
 import { createIdleState, RANK_BY_ID, rankCost, simulateIdle, UNITS, unitCost, unitUnlocked, UPGRADE_BY_ID, upgradeVisible } from './idle'
 import { addXp, gearBonuses, monsterFor, nextStreak, phaseMinutes, sessionRewards } from './logic'
-import type { GameState, Phase, Settings, Slot, TimerState } from './types'
+import type { GameState, Gender, Phase, Settings, Slot, TimerState } from './types'
 
 export type Action =
   | { type: 'setName'; name: string }
+  | { type: 'setGender'; gender: Gender }
   | { type: 'addSubject'; id: string; name: string; color: string }
   | { type: 'removeSubject'; id: string }
   | { type: 'selectSubject'; id: string }
@@ -51,7 +52,7 @@ export function createInitialState(): GameState {
   }
   return {
     version: 1,
-    hero: { name: 'Hero', level: 1, xp: 0, totalXp: 0, gold: 0 },
+    hero: { name: 'Hero', gender: 'male', level: 1, xp: 0, totalXp: 0, gold: 0 },
     subjects: [],
     selectedSubjectId: null,
     settings,
@@ -103,6 +104,9 @@ export function gameReducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'setName':
       return { ...state, hero: { ...state.hero, name: action.name.slice(0, 16) || 'Hero' } }
+
+    case 'setGender':
+      return { ...state, hero: { ...state.hero, gender: action.gender } }
 
     case 'addSubject':
       return {

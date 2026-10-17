@@ -1,6 +1,6 @@
 import { ITEM_BY_ID, type MonsterTier } from '../game/data'
 import type { CSSProperties } from 'react'
-import type { GameState } from '../game/types'
+import type { GameState, Gender } from '../game/types'
 
 type Palette = Record<string, string>
 
@@ -54,13 +54,50 @@ const HERO = [
   '...ooooo.ooooo....',
 ]
 
+// Heroine: same frame and sword position as HERO, with flowing hair, a tiara and a pleated armour skirt.
+// Extra keys: H/h hair, T tiara gold, l eyelash, r blush, p lips (X = tiara gem).
+const HEROINE = [
+  '..................',
+  '.....ooooo........',
+  '....oHHHHHo....o..',
+  '...oHHHHHHHo..oWo.',
+  '...oHHTXTHHHo.oWo.',
+  '..oHHHHssssssooWo.',
+  '..oHHHhsssslsooWo.',
+  '..oHHhHsssserooWo.',
+  '..oHHhHsssspo.oWo.',
+  '..oHHhHoSso..ogggo',
+  '.oHHhoAAAAAo..oGo.',
+  '.oHHhoALAAAAoossso',
+  '.oHHhoAAaaAAooooo.',
+  '..oHhoakkXkkao....',
+  '...ooAAAAAAAAo....',
+  '...oAALAAAAAAo....',
+  '...oaAaAaAaAao....',
+  '.....oaao.oaao....',
+  '.....oaao.oaao....',
+  '.....obbo.obbo....',
+  '....obBbo.obBbo...',
+  '....ooooo.ooooo...',
+]
+
 /** Mixes two #rrggbb colours; t = 0 gives `a`, 1 gives `b`. */
 function mix(a: string, b: string, t: number): string {
   const ch = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16)
   return `#${[0, 1, 2].map((i) => Math.round(ch(a, i) + (ch(b, i) - ch(a, i)) * t).toString(16).padStart(2, '0')).join('')}`
 }
 
-export function HeroSprite({ equipped, scale = 6, className }: { equipped: GameState['equipped']; scale?: number; className?: string }) {
+export function HeroSprite({
+  equipped,
+  gender = 'male',
+  scale = 6,
+  className,
+}: {
+  equipped: GameState['equipped']
+  gender?: Gender
+  scale?: number
+  className?: string
+}) {
   const weapon = equipped.weapon ? ITEM_BY_ID[equipped.weapon] : undefined
   const armor = equipped.armor ? ITEM_BY_ID[equipped.armor] : undefined
   const relic = equipped.accessory ? ITEM_BY_ID[equipped.accessory] : undefined
@@ -81,7 +118,13 @@ export function HeroSprite({ equipped, scale = 6, className }: { equipped: GameS
     c: mix(cape, '#000000', 0.4),
     P: cape,
     k: '#5a3a22',
-    X: relic?.color ?? '#8a6a3a',
+    X: relic?.color ?? (gender === 'female' ? '#e05088' : '#8a6a3a'),
+    H: '#f0c048',
+    h: '#b8862a',
+    T: '#ffe070',
+    l: '#1a1030',
+    r: '#f4a0a0',
+    p: '#e0607a',
     b: '#4a2e1a',
     B: '#7a5030',
   }
@@ -89,7 +132,7 @@ export function HeroSprite({ equipped, scale = 6, className }: { equipped: GameS
   const mythic = [weapon, armor, relic].find((i) => i?.rarity === 'mythic')
   return (
     <span className={`hero-wrap ${mythic ? 'mythic' : ''}`} style={mythic ? ({ '--aura': mythic.color } as CSSProperties) : undefined}>
-      <PixelSprite grid={HERO} palette={palette} scale={scale} className={className} />
+      <PixelSprite grid={gender === 'female' ? HEROINE : HERO} palette={palette} scale={scale} className={className} />
     </span>
   )
 }
