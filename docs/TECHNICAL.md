@@ -44,7 +44,7 @@ src/
     useSky.ts         Hook: recomputes the sky every minute (or at a dev preview hour)
     dev.ts            DevOp union + devReducer(): pure cheat transforms (grant, warp, simulate, …)
   components/
-    Hud.tsx           Name, level/title, XP bar, sky dial, gold, souls, streak
+    Hud.tsx           Name, level/title, XP bar, sky dial, DigitalClock (24h, minute-aligned timer), gold, souls, streak
     Sky.tsx           Background sky (phase palette, stars, sun/moon on an arc, clouds, castle) + SkyDial for the HUD
     QuestScreen.tsx   Battle, Camp (rest), SiegePanel, timer panel, DurationPicker, Controls, SubjectPicker
     Siege.tsx         SiegeScene (army, projectiles, keep) used by Quest and Army screens
@@ -112,6 +112,7 @@ Steps 1–5 live in `grantSession(state, minutes, subjectId, at, recordId)`, whi
 - Moon phase: days since a known new moon (2000-01-06 18:14 UTC) mod 29.530588853. `MoonSprite` draws a 16×16 disc and lights pixels past the terminator `w·cos(2π·phase)`, lit from the right while waxing and the left while waning.
 - `useSky(settings, previewHour)` lives in `App`. It feeds `<Sky>` (background), `<SkyDial>` (HUD), Config (today's times) and the dev panel. The background body sits behind the panels, so the HUD dial is the always-visible indicator.
 - Not part of game rules or rewards. Purely cosmetic.
+- Times shown to the player use `clock24()` (`logic.ts`): 24-hour HH:MM from local time, independent of the browser locale. The HUD clock re-renders on minute boundaries via a self-rescheduling `setTimeout`, and resyncs on `visibilitychange` because background tabs throttle timers.
 
 ### 3.5 Developer tools
 - **Actions:** one wrapper action `{ type: 'dev', dev: DevOp }` delegates to `devReducer` in `game/dev.ts`. It is pure like the main reducer (`now`/ids in the payload) and reuses real rules (`grantSession`, `addXp`, `keepLoot`).

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { clock24 } from '../game/logic'
 import { moonPhaseName, type SkyState } from '../game/sky'
 import { CloudSprite, MoonSprite, SunSprite } from './Sprites'
 
@@ -33,15 +34,13 @@ export function Sky({ sky }: { sky: SkyState }) {
   )
 }
 
-const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-
 /** Mini sky window for the HUD, so the time of day is visible even where panels cover the background. */
 export function SkyDial({ sky }: { sky: SkyState }) {
   const sunUp = sky.phase !== 'night'
   const p = sunUp ? sky.sunProgress : sky.moonProgress
   const label = [
     sky.phase[0].toUpperCase() + sky.phase.slice(1),
-    sky.sunrise && sky.sunset ? `Sunrise ${clock(sky.sunrise)} · Sunset ${clock(sky.sunset)}` : null,
+    sky.sunrise && sky.sunset ? `Sunrise ${clock24(sky.sunrise)} · Sunset ${clock24(sky.sunset)}` : null,
     moonPhaseName(sky.moonPhase),
   ]
     .filter(Boolean)

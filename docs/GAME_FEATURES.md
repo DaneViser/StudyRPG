@@ -29,7 +29,7 @@ Nothing needs clicking while studying. The game is designed to run in the backgr
 | **Log** | Time per subject (Bestiary) and recent completed sessions (Adventure Log). Delete subjects here. |
 | **Config** | Hero name, timer lengths, options, save export/import, New Game. |
 
-The **HUD** (top bar) shows hero name, level and title, the XP bar, the **sky dial** (§9.1), **gold**, **souls** (current, spendable) and the daily streak.
+The **HUD** (top bar) shows hero name, level and title, the XP bar, the **sky dial** (§9.1), a **24-hour digital clock** (local time, HH:MM, ticks over on each new minute), **gold**, **souls** (current, spendable) and the daily streak.
 
 A red dot on the Quest tab means a quest is running while you're on another tab. The browser tab title shows the countdown (e.g. `24:58 Quest - StudyRPG`).
 
@@ -250,7 +250,7 @@ The background follows the player's **real local time**:
 
 - **The moon shows its real phase** (new, crescent, quarter, gibbous, full), lit from the correct side. Its path across the sky is simplified: it rises at sunset and sets at sunrise.
 - **Sunrise/sunset** are estimated from the browser's time zone (no permission needed). **Config → Sky → Use my location** asks the browser for your position for exact times. It's stored rounded to ~10 km, and **Forget location** removes it.
-- **Sky dial:** a mini sky in the HUD showing the sun or moon on its arc in the phase colours. Hover it for the phase, today's sunrise/sunset and the moon phase. On phones it's a strip above the gold/souls/streak numbers. It exists because the panels cover most of the background on smaller screens.
+- **Sky dial:** a mini sky in the HUD showing the sun or moon on its arc in the phase colours. Hover it for the phase, today's sunrise/sunset and the moon phase. On phones the dial is a strip that shares the top row with the clock, with gold/souls/streak below. All times (clock, sunrise, sunset) use 24-hour format. It exists because the panels cover most of the background on smaller screens.
 - **Config → Sky** modes: **Live** (default), **Always night**, **Always day**. Live mode also shows today's sunrise, sunset and moon phase.
 - The sky refreshes every minute; the sun and moon glide between positions.
 

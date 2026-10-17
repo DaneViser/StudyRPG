@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent, type Dispatch } from 'react'
 import type { Action } from '../game/reducer'
 import { createInitialState } from '../game/reducer'
+import { clock24 } from '../game/logic'
 import { moonPhaseName, type SkyState } from '../game/sky'
 import { normalizeSave } from '../game/storage'
 import type { GameState, Settings, SkyMode } from '../game/types'
@@ -10,8 +11,6 @@ const SKY_MODES: [SkyMode, string][] = [
   ['night', 'Always night'],
   ['day', 'Always day'],
 ]
-
-const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
 export function ConfigScreen({ state, dispatch, sky }: { state: GameState; dispatch: Dispatch<Action>; sky: SkyState }) {
   const { settings } = state
@@ -131,7 +130,7 @@ export function ConfigScreen({ state, dispatch, sky }: { state: GameState; dispa
         </div>
         <p className="hint">
           {settings.skyMode === 'live'
-            ? `${sky.sunrise && sky.sunset ? `Today: sunrise ${clock(sky.sunrise)}, sunset ${clock(sky.sunset)}` : 'Polar day or night today'}, ${settings.location ? 'from your location' : 'estimated from your time zone'}. ${moonPhaseName(sky.moonPhase)}.`
+            ? `${sky.sunrise && sky.sunset ? `Today: sunrise ${clock24(sky.sunrise)}, sunset ${clock24(sky.sunset)}` : 'Polar day or night today'}, ${settings.location ? 'from your location' : 'estimated from your time zone'}. ${moonPhaseName(sky.moonPhase)}.`
             : 'The sky stays fixed.'}
         </p>
         {settings.skyMode === 'live' && (

@@ -137,3 +137,9 @@ export function monsterFor(minutes: number) {
   })
   return { tier, rank }
 }
+
+/** Local wall-clock time as 24-hour HH:MM, regardless of the browser's locale. */
+export function clock24(ms: number): string {
+  const d = new Date(ms)
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
