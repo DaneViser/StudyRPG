@@ -198,7 +198,11 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 
 **Sprites:** each sprite is an array of equal-length strings; each char maps to a colour in a palette (`.` = transparent). `PixelSprite` merges horizontal runs into `<rect>`s. Keep widths consistent (a quick script check is worth it).
 
-**Styling:** colour tokens in `:root` (`--gold`, `--xp`, `--hp` …), `--px` = 4 px pixel unit, `.panel` / `.btn` / `.bar` primitives. Breakpoints: `max-width: 760px` (phone stack), `min-width: 761px and max-height: 760px` (short laptops). `prefers-reduced-motion` disables animations.
+**Styling:** colour tokens in `:root` (`--gold`, `--xp`, `--hp` …), `--px` = 4 px pixel unit, `.panel` / `.btn` / `.bar` primitives. Breakpoints: `max-width: 760px` (phone stack), `max-width: 380px` (small phones: tighter padding, smaller clock), `min-width: 761px and max-height: 760px` (short laptops). `prefers-reduced-motion` disables animations.
+
+**Phone layout:** `.quest-main` / `.quest-side` become `display: contents` so the four Quest panels can be reordered with `order` (battle, timer, siege, subjects; `.needs-subject` moves subjects to second until one is picked). The flex column must keep `align-items: stretch`, because the battle panel's content is all absolutely positioned and would otherwise shrink to zero width (the bug that hid the hero on phones). Tabs become a 3×2 grid and the "▶" cursor (`.tab-cursor`) is hidden.
+
+**Battle stage sizing is based on the stage, not the screen:** `.battle` is a size container. Sprites cap at `min(132px, 40cqw)` (hero height) and `min(150px, 38cqw)` (monster width), and `@container (max-width: 560px)` switches to the narrow arrangement (full-width info strip, fighters moved outward, enemies lowered). Phones, tablets and small windows all get it automatically.
 
 **Changing the save format incompatibly:** bump `version`, write a `migrate(vN → vN+1)` step in `storage.ts` before `normalizeSave`, keep reading the old key.
 

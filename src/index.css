@@ -205,6 +205,12 @@ svg {
   flex-wrap: wrap;
 }
 
+.row > input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
 /* ---------- HUD ---------- */
 
 .hud {
@@ -783,6 +789,39 @@ input[type='number'] {
   flex-wrap: wrap;
 }
 
+/* Sprites shrink with the stage width (no effect on wide desktop stages) */
+.battle .hero-sprite {
+  width: auto;
+  height: min(132px, 40cqw);
+}
+
+.monster {
+  width: auto;
+  height: auto;
+  max-width: min(150px, 38cqw);
+}
+
+/* Narrow stage (phones, tablets, small windows): info becomes a full-width strip, fighters move outward */
+@container (max-width: 560px) {
+  .enemy-info {
+    width: auto;
+    right: 12px;
+  }
+
+  .enemy-sprite {
+    right: 5%;
+    bottom: 16%;
+  }
+
+  .enemy-sprite.flying {
+    bottom: 30%;
+  }
+
+  .battle .hero-sprite {
+    left: 6%;
+  }
+}
+
 /* ---------- Combat loop (2.4 s): hero strikes at ~20%, the foe answers at ~70% ---------- */
 
 .hero-wrap.mythic svg {
@@ -1096,7 +1135,7 @@ input[type='number'] {
 .siege {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: 1fr auto;
   gap: 8px 16px;
   min-height: 170px;
@@ -1851,6 +1890,26 @@ input[type='number'] {
   .quest-layout {
     display: flex;
     flex-direction: column;
+    /* the desktop grid uses align-items: start, which would shrink the battle
+       panel (all absolutely positioned content) to zero width in a column */
+    align-items: stretch;
+  }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .moon {
+    top: 6px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .tab {
+    padding: 10px 6px;
+    text-align: center;
   }
 
   .quest-main,
@@ -1866,12 +1925,51 @@ input[type='number'] {
     order: 2;
   }
 
-  .subject-panel {
+  /* Phone order: battle, timer, siege, subjects (subjects first until one is picked) */
+  .siege-panel {
     order: 3;
   }
 
-  .siege-panel {
+  .subject-panel {
     order: 4;
+  }
+
+  .needs-subject .subject-panel {
+    order: 2;
+  }
+
+  .needs-subject .timer-panel {
+    order: 3;
+  }
+
+  .needs-subject .siege-panel {
+    order: 4;
+  }
+
+  .tab-cursor {
+    display: none;
+  }
+
+  .trooper {
+    width: auto;
+    height: 32px;
+  }
+
+  .squad-dragon .trooper {
+    height: 28px;
+  }
+
+  .siege-army {
+    gap: 4px 8px;
+  }
+
+  .dev-fab {
+    top: 8px;
+    bottom: auto;
+    left: 8px;
+    right: auto;
+    padding: 5px 6px;
+    font-size: 8px;
   }
 
   .clock {
@@ -1889,19 +1987,6 @@ input[type='number'] {
     grid-template-columns: 1fr;
   }
 
-  .enemy-info {
-    width: 190px;
-  }
-
-  .enemy-sprite {
-    right: 4%;
-  }
-
-  .monster {
-    max-width: 150px;
-    height: auto;
-  }
-
   .siege-keep {
     width: 120px;
   }
@@ -1913,10 +1998,6 @@ input[type='number'] {
 
   .shots {
     right: 120px;
-  }
-
-  .battle .hero-sprite {
-    left: 8%;
   }
 
   .shop-item {
@@ -1939,6 +2020,31 @@ input[type='number'] {
 
   .logo {
     font-size: 20px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+  .frame {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .clock {
+    font-size: 42px;
+  }
+
+  .clock.clock-long {
+    font-size: 30px;
+  }
+
+  .hud-stats {
+    gap: 10px;
+    font-size: 10px;
   }
 }
 

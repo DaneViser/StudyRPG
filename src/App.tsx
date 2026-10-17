@@ -43,7 +43,7 @@ export default function App() {
         <nav className="tabs" aria-label="Screens">
           {TABS.map((t) => (
             <button key={t.id} className={`tab ${tab === t.id ? 'active' : ''}`} aria-current={tab === t.id} onClick={() => setTab(t.id)}>
-              {tab === t.id && '▶ '}
+              {tab === t.id && <span className="tab-cursor">▶ </span>}
               {t.label}
               {t.id === 'quest' && tab !== 'quest' && state.timer.status === 'running' && <span className="dot" />}
             </button>

@@ -26,7 +26,7 @@ export function QuestScreen({ state, dispatch, remainingMs, now }: Props) {
 
   // Main column: battle + siege side by side with the controls, so both are visible while studying
   return (
-    <div className="quest-layout">
+    <div className={`quest-layout ${state.selectedSubjectId ? '' : 'needs-subject'}`}>
       <div className="quest-main">
         <section className="panel stage-panel" aria-label="Battle">
           {isFocus ? <Battle state={state} remainingMs={remainingMs} now={now} /> : <Camp state={state} remainingMs={remainingMs} />}

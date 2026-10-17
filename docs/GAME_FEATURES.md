@@ -258,7 +258,7 @@ https://daneviser.github.io/StudyRPG/ (updates automatically after each push to 
 
 ## 12. Look & feel
 
-8/16-bit castle-at-night style: pixel fonts (Press Start 2P, VT323), hand-made pixel sprites, moon and castle silhouette, twinkling stars, chunky pixel borders, optional scanlines. Animations respect the OS "reduce motion" setting. Layout fits on one screen on most desktops and stacks on phones.
+8/16-bit castle-at-night style: pixel fonts (Press Start 2P, VT323), hand-made pixel sprites, moon and castle silhouette, twinkling stars, chunky pixel borders, optional scanlines. Animations respect the OS "reduce motion" setting. Layout fits on one screen on most desktops. On phones the Quest screen stacks battle → timer → siege → subjects (subjects come first until you've picked one), the tabs form a 3×2 grid, and the battle scales to the screen so the hero and foe always fit side by side. It's tested down to 320 px wide.
 
 ---
 
