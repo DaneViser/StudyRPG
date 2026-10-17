@@ -1,10 +1,19 @@
 import { useRef, useState, type ChangeEvent, type Dispatch } from 'react'
 import type { Action } from '../game/reducer'
 import { createInitialState } from '../game/reducer'
+import { moonPhaseName, type SkyState } from '../game/sky'
 import { normalizeSave } from '../game/storage'
-import type { GameState, Settings } from '../game/types'
+import type { GameState, Settings, SkyMode } from '../game/types'
 
-export function ConfigScreen({ state, dispatch }: { state: GameState; dispatch: Dispatch<Action> }) {
+const SKY_MODES: [SkyMode, string][] = [
+  ['live', 'Live'],
+  ['night', 'Always night'],
+  ['day', 'Always day'],
+]
+
+const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+export function ConfigScreen({ state, dispatch, sky }: { state: GameState; dispatch: Dispatch<Action>; sky: SkyState }) {
   const { settings } = state
   const [name, setName] = useState(state.hero.name)
   const [msg, setMsg] = useState('')
@@ -49,6 +58,20 @@ export function ConfigScreen({ state, dispatch }: { state: GameState; dispatch: 
       }
     }
     set({ notifications: on })
+  }
+
+  const shareLocation = () => {
+    if (!('geolocation' in navigator)) return setMsg('This browser cannot share a location.')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        // Rounded to ~10 km: enough for sunrise/sunset, not a precise position
+        const round = (n: number) => Math.round(n * 10) / 10
+        set({ location: { lat: round(pos.coords.latitude), lon: round(pos.coords.longitude) } })
+        setMsg('Location saved for exact sunrise and sunset.')
+      },
+      () => setMsg('Location was not shared. Using your time zone instead.'),
+      { timeout: 10_000, maximumAge: 86_400_000 },
+    )
   }
 
   return (
@@ -97,6 +120,33 @@ export function ConfigScreen({ state, dispatch }: { state: GameState; dispatch: 
         <Toggle label="8-bit sound" checked={settings.sound} onChange={(v) => set({ sound: v })} />
         <Toggle label="Desktop notifications" checked={settings.notifications} onChange={(v) => void toggleNotifications(v)} />
         <Toggle label="CRT scanlines" checked={settings.scanlines} onChange={(v) => set({ scanlines: v })} />
+
+        <h2 className="panel-title">Sky</h2>
+        <div className="row wrap">
+          {SKY_MODES.map(([mode, label]) => (
+            <button key={mode} className={`btn btn-small ${settings.skyMode === mode ? 'on' : ''}`} onClick={() => set({ skyMode: mode })}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="hint">
+          {settings.skyMode === 'live'
+            ? `${sky.sunrise && sky.sunset ? `Today: sunrise ${clock(sky.sunrise)}, sunset ${clock(sky.sunset)}` : 'Polar day or night today'}, ${settings.location ? 'from your location' : 'estimated from your time zone'}. ${moonPhaseName(sky.moonPhase)}.`
+            : 'The sky stays fixed.'}
+        </p>
+        {settings.skyMode === 'live' && (
+          <div className="row wrap">
+            {settings.location ? (
+              <button className="btn btn-small" onClick={() => (set({ location: null }), setMsg('Location forgotten.'))}>
+                Forget location
+              </button>
+            ) : (
+              <button className="btn btn-small" onClick={shareLocation}>
+                Use my location
+              </button>
+            )}
+          </div>
+        )}
 
         <h2 className="panel-title">Save Data</h2>
         <p className="hint">Progress is saved automatically in this browser (localStorage). Export a backup to move it elsewhere.</p>

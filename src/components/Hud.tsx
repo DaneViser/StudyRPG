@@ -1,9 +1,11 @@
 import { formatNum } from '../game/idle'
 import { liveStreak, streakBonus, titleFor, xpToNext, percent } from '../game/logic'
+import type { SkyState } from '../game/sky'
 import type { GameState } from '../game/types'
+import { SkyDial } from './Sky'
 import { CoinIcon, FlameIcon, SoulIcon, XpIcon } from './Sprites'
 
-export function Hud({ state, now }: { state: GameState; now: number }) {
+export function Hud({ state, now, sky }: { state: GameState; now: number; sky: SkyState }) {
   const { hero } = state
   const need = xpToNext(hero.level)
   const streak = liveStreak(state.streak, now)
@@ -24,6 +26,7 @@ export function Hud({ state, now }: { state: GameState; now: number }) {
         </div>
       </div>
       <div className="hud-stats">
+        <SkyDial sky={sky} />
         <span className="stat" title="Gold">
           <CoinIcon /> {hero.gold}
         </span>

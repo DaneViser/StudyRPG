@@ -25,6 +25,13 @@ export interface Subject {
   sessions: number
 }
 
+export type SkyMode = 'live' | 'night' | 'day'
+
+export interface SkyLocation {
+  lat: number
+  lon: number
+}
+
 export interface Settings {
   focusMinutes: number
   shortBreakMinutes: number
@@ -34,6 +41,10 @@ export interface Settings {
   sound: boolean
   notifications: boolean
   scanlines: boolean
+  /** Background sky: follow local time, or force night/day */
+  skyMode: SkyMode
+  /** Optional user-granted location (rounded to 0.1°) for exact sunrise/sunset */
+  location: SkyLocation | null
 }
 
 export type Phase = 'focus' | 'short' | 'long'

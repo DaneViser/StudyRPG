@@ -6,10 +6,12 @@ interface DevPrefs {
   unlocked: boolean
   /** Game-clock multiplier for running phases */
   speed: number
+  /** Pins the background sky to this hour of today (null = live) */
+  skyHour: number | null
 }
 
 function readPrefs(): DevPrefs {
-  const prefs: DevPrefs = { unlocked: false, speed: 1 }
+  const prefs: DevPrefs = { unlocked: false, speed: 1, skyHour: null }
   try {
     Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}'))
   } catch {
@@ -54,9 +56,10 @@ export function useDevMode() {
   }, [prefs.unlocked])
 
   const setSpeed = useCallback((speed: number) => setPrefs((p) => ({ ...p, speed })), [])
+  const setSkyHour = useCallback((skyHour: number | null) => setPrefs((p) => ({ ...p, skyHour })), [])
 
   const lock = useCallback(() => {
-    setPrefs({ unlocked: false, speed: 1 })
+    setPrefs({ unlocked: false, speed: 1, skyHour: null })
     setOpen(false)
     const url = new URL(location.href)
     url.searchParams.delete('dev')
@@ -69,6 +72,8 @@ export function useDevMode() {
     setOpen,
     speed: prefs.unlocked ? prefs.speed : 1,
     setSpeed,
+    skyHour: prefs.unlocked ? prefs.skyHour : null,
+    setSkyHour,
     lock,
     canLock: !import.meta.env.DEV,
   }

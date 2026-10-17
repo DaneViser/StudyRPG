@@ -54,6 +54,26 @@ svg {
   position: fixed;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(#07051a 0%, #1a0f3a 55%, #3a1440 85%, #5a1a3a 100%);
+}
+
+/* Day/night palettes (picked from the player's local time, see game/sky.ts) */
+.sky-dawn {
+  background: linear-gradient(#1c1a4a 0%, #5a3a78 35%, #d8687a 70%, #ffb070 100%);
+}
+
+.sky-day {
+  background: linear-gradient(#2f6fd0 0%, #5a9ae8 45%, #9cc8f4 80%, #d0e8ff 100%);
+}
+
+.sky-dusk {
+  background: linear-gradient(#141040 0%, #4a2a6a 35%, #c04a6a 70%, #ff8a50 100%);
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
   background:
     radial-gradient(1px 1px at 10% 20%, #fff 99%, transparent),
     radial-gradient(1px 1px at 30% 8%, #fff 99%, transparent),
@@ -62,10 +82,17 @@ svg {
     radial-gradient(2px 2px at 88% 12%, #fff 99%, transparent),
     radial-gradient(1px 1px at 18% 45%, #ccf 99%, transparent),
     radial-gradient(1px 1px at 62% 48%, #fff 99%, transparent),
-    radial-gradient(1px 1px at 92% 52%, #ccf 99%, transparent),
-    linear-gradient(#07051a 0%, #1a0f3a 55%, #3a1440 85%, #5a1a3a 100%);
-  background-attachment: fixed;
+    radial-gradient(1px 1px at 92% 52%, #ccf 99%, transparent);
   animation: twinkle 4s steps(2) infinite;
+}
+
+.sky-dawn .stars,
+.sky-dusk .stars {
+  opacity: 0.35;
+}
+
+.sky-day .stars {
+  display: none;
 }
 
 @keyframes twinkle {
@@ -74,17 +101,105 @@ svg {
   }
 }
 
-.moon {
+.sky-dial {
+  position: relative;
+  width: 72px;
+  height: 30px;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+  box-shadow: 0 0 0 2px #4a3a88;
+  background: linear-gradient(#07051a, #2a1440);
+}
+
+.sky-dial.sky-day {
+  background: linear-gradient(#2f6fd0, #9cc8f4);
+}
+
+.sky-dial.sky-dawn {
+  background: linear-gradient(#5a3a78, #ffb070);
+}
+
+.sky-dial.sky-dusk {
+  background: linear-gradient(#4a2a6a, #ff8a50);
+}
+
+.dial-body {
   position: absolute;
-  top: 6vh;
-  right: 8vw;
-  width: 96px;
-  height: 96px;
-  background: #ffe8c8;
-  box-shadow:
-    0 0 0 8px rgba(255, 232, 200, 0.12),
-    0 0 0 20px rgba(255, 232, 200, 0.06);
-  clip-path: polygon(30% 0, 70% 0, 70% 8%, 85% 8%, 85% 16%, 92% 16%, 92% 30%, 100% 30%, 100% 70%, 92% 70%, 92% 84%, 85% 84%, 85% 92%, 70% 92%, 70% 100%, 30% 100%, 30% 92%, 15% 92%, 15% 84%, 8% 84%, 8% 70%, 0 70%, 0 30%, 8% 30%, 8% 16%, 15% 16%, 15% 8%, 30% 8%);
+  line-height: 0;
+  transform: translate(-50%, 50%);
+}
+
+.dial-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: #0a0614;
+}
+
+.celestial {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  line-height: 0;
+  transition:
+    left 2s linear,
+    top 2s linear;
+}
+
+.moon svg {
+  filter: drop-shadow(0 0 10px rgba(255, 232, 200, 0.35));
+}
+
+.sun svg {
+  filter: drop-shadow(0 0 16px rgba(255, 210, 80, 0.7));
+  animation: sun-pulse 3s steps(2) infinite;
+}
+
+@keyframes sun-pulse {
+  50% {
+    filter: drop-shadow(0 0 24px rgba(255, 210, 80, 0.9));
+  }
+}
+
+.sky-dawn .sun svg,
+.sky-dusk .sun svg {
+  filter: drop-shadow(0 0 18px rgba(255, 120, 60, 0.8)) saturate(1.2) hue-rotate(-12deg);
+}
+
+.cloud {
+  position: absolute;
+  left: -120px;
+  opacity: 0.9;
+  animation: drift 160s linear infinite;
+}
+
+.cloud.c1 {
+  top: 10vh;
+}
+
+.cloud.c2 {
+  top: 22vh;
+  animation-duration: 220s;
+  animation-delay: -90s;
+}
+
+.cloud.c3 {
+  top: 34vh;
+  animation-duration: 190s;
+  animation-delay: -150s;
+}
+
+.sky-dawn .cloud,
+.sky-dusk .cloud {
+  filter: sepia(0.6) saturate(2.5) hue-rotate(-30deg) brightness(0.95);
+  opacity: 0.75;
+}
+
+@keyframes drift {
+  to {
+    transform: translateX(calc(100vw + 240px));
+  }
 }
 
 .castle {
@@ -94,12 +209,22 @@ svg {
   bottom: 0;
   height: 30vh;
   background: #0a0614;
+  transition: background 2s;
   clip-path: polygon(
     0 100%, 0 60%, 4% 60%, 4% 52%, 6% 52%, 6% 60%, 10% 60%, 10% 40%, 12% 40%, 12% 34%, 14% 34%, 14% 28%, 16% 28%, 16% 34%, 18% 34%, 18% 40%,
     20% 40%, 20% 70%, 30% 70%, 30% 50%, 33% 50%, 33% 45%, 36% 45%, 36% 50%, 40% 50%, 40% 64%, 55% 64%, 55% 30%, 57% 30%, 57% 18%, 59% 18%, 59% 6%,
     61% 6%, 61% 18%, 63% 18%, 63% 30%, 65% 30%, 65% 55%, 75% 55%, 75% 44%, 78% 44%, 78% 38%, 80% 38%, 80% 44%, 83% 44%, 83% 62%, 92% 62%, 92% 48%,
     95% 48%, 95% 56%, 100% 56%, 100% 100%
   );
+}
+
+.sky-dawn .castle,
+.sky-dusk .castle {
+  background: #1e1230;
+}
+
+.sky-day .castle {
+  background: #2a2a52;
 }
 
 .crt::after {
@@ -1881,6 +2006,22 @@ input[type='number'] {
     grid-row: 2;
   }
 
+  .hud-id {
+    white-space: nowrap;
+  }
+
+  /* Dial becomes a wide sky strip above gold / souls / streak */
+  .hud-stats {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 8px;
+  }
+
+  .sky-dial {
+    flex: 1 0 100%;
+    height: 24px;
+  }
+
   .topbar {
     flex-direction: column;
     align-items: stretch;
@@ -1900,11 +2041,14 @@ input[type='number'] {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .moon {
-    top: 6px;
-    right: 8px;
-    width: 48px;
-    height: 48px;
+  .celestial svg {
+    width: 56px;
+    height: auto;
+  }
+
+  .cloud {
+    width: 64px;
+    height: auto;
   }
 
   .tab {

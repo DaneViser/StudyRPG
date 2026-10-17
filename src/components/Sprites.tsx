@@ -345,3 +345,73 @@ export function KeepSprite({ level, scale = 4, className }: { level: number; sca
     />
   )
 }
+
+// ---------- Sky ----------
+
+const MOON_SIZE = 16
+const CRATERS = new Set(['5,4', '6,4', '10,6', '4,9', '5,9', '9,10', '10,10', '11,11', '7,12'])
+
+/** Pixel moon showing the real lunar phase (0 new → 0.5 full → 1 new). */
+function moonGrid(phase: number): string[] {
+  const rows: string[] = []
+  const c = (MOON_SIZE - 1) / 2
+  const r = MOON_SIZE / 2
+  for (let y = 0; y < MOON_SIZE; y++) {
+    let row = ''
+    for (let x = 0; x < MOON_SIZE; x++) {
+      const nx = (x - c) / r
+      const ny = (y - c) / r
+      if (nx * nx + ny * ny > 1) {
+        row += '.'
+        continue
+      }
+      const w = Math.sqrt(1 - ny * ny)
+      // Waxing: lit from the right; waning: lit from the left
+      const lit = phase <= 0.5 ? nx > w * Math.cos(2 * Math.PI * phase) : nx < w * Math.cos(2 * Math.PI * (phase - 0.5))
+      const crater = CRATERS.has(`${x},${y}`)
+      row += lit ? (crater ? 'c' : 'L') : crater ? 'k' : 'D'
+    }
+    rows.push(row)
+  }
+  return rows
+}
+
+export function MoonSprite({ phase, scale = 5, className }: { phase: number; scale?: number; className?: string }) {
+  return (
+    <PixelSprite
+      grid={moonGrid(phase)}
+      palette={{ L: '#fff0d0', c: '#e0cca0', D: '#2e2a4a', k: '#26223e' }}
+      scale={scale}
+      className={className}
+    />
+  )
+}
+
+const SUN = [
+  '.......y........',
+  '.......y........',
+  '..y....y....y...',
+  '...y.......y....',
+  '.....YYYYY......',
+  '....YwwYYYY.....',
+  '...YwwYYYYYY....',
+  'yy.YwYYYYYYY.yy.',
+  '...YYYYYYYYY....',
+  '...YYYYYYYYo....',
+  '....YYYYYYo.....',
+  '.....YYoYo......',
+  '...y.......y....',
+  '..y....y....y...',
+  '.......y........',
+  '.......y........',
+]
+
+export function SunSprite({ scale = 5, className }: { scale?: number; className?: string }) {
+  return <PixelSprite grid={SUN} palette={{ Y: '#ffd040', w: '#fff8d0', o: '#f0a020', y: '#ffe070' }} scale={scale} className={className} />
+}
+
+const CLOUD = ['.....wwww.......', '...wwwwwwww.ww..', '.wwwwwwwwwwwwwww', 'wwwwwwwwwwwwwwww', '.ggggggggggggggg']
+
+export function CloudSprite({ scale = 6, className }: { scale?: number; className?: string }) {
+  return <PixelSprite grid={CLOUD} palette={{ w: '#ffffff', g: '#d8e4f4' }} scale={scale} className={className} />
+}

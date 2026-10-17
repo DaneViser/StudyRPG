@@ -40,9 +40,12 @@ src/
     storage.ts        loadGame / saveGame / normalizeSave / clearSave (localStorage)
     sound.ts          Chiptune sfx
     useGame.ts        Hook: reducer + persistence + ticking clock (+ dev speed) + completion side effects
+    sky.ts            Pure sky maths: guessLocation(), sunTimes() (NOAA approx.), moonPhase(), skyState()
+    useSky.ts         Hook: recomputes the sky every minute (or at a dev preview hour)
     dev.ts            DevOp union + devReducer(): pure cheat transforms (grant, warp, simulate, …)
   components/
-    Hud.tsx           Name, level/title, XP bar, gold, souls, streak
+    Hud.tsx           Name, level/title, XP bar, sky dial, gold, souls, streak
+    Sky.tsx           Background sky (phase palette, stars, sun/moon on an arc, clouds, castle) + SkyDial for the HUD
     QuestScreen.tsx   Battle, Camp (rest), SiegePanel, timer panel, DurationPicker, Controls, SubjectPicker
     Siege.tsx         SiegeScene (army, projectiles, keep) used by Quest and Army screens
     ArmyScreen.tsx    Siege stats, recruit list, War Council
@@ -103,10 +106,17 @@ vite.config.ts        React plugin, `base: './'` (relative asset paths)
 
 Steps 1–5 live in `grantSession(state, minutes, subjectId, at, recordId)`, which never touches the timer. `complete` calls it and then moves the timer to a short/long rest (optionally auto-started). The dev "Simulate study" tool calls the same function, so simulated sessions follow the real rules.
 
-### 3.4 Developer tools
+### 3.4 Live sky
+- `skyState(now, location, mode)` is pure. It returns `{ phase: night|dawn|day|dusk, sunProgress, moonProgress, moonPhase, sunrise, sunset }`. Progress values are 0→1 across the day (sunrise→sunset) or night (sunset→next sunrise). Twilight is ±40 min around sunrise/sunset. Polar day/night is handled.
+- Location: `settings.location` if the player shared it, else `guessLocation()`. That takes longitude from the **standard** (non-DST) UTC offset × 15°, and latitude 45° (−30° for a list of southern-hemisphere time zones). The estimate is usually within ~30 min of real times.
+- Moon phase: days since a known new moon (2000-01-06 18:14 UTC) mod 29.530588853. `MoonSprite` draws a 16×16 disc and lights pixels past the terminator `w·cos(2π·phase)`, lit from the right while waxing and the left while waning.
+- `useSky(settings, previewHour)` lives in `App`. It feeds `<Sky>` (background), `<SkyDial>` (HUD), Config (today's times) and the dev panel. The background body sits behind the panels, so the HUD dial is the always-visible indicator.
+- Not part of game rules or rewards. Purely cosmetic.
+
+### 3.5 Developer tools
 - **Actions:** one wrapper action `{ type: 'dev', dev: DevOp }` delegates to `devReducer` in `game/dev.ts`. It is pure like the main reducer (`now`/ids in the payload) and reuses real rules (`grantSession`, `addXp`, `keepLoot`).
 - **Clock speed:** `useGame(speed)`. On each 250 ms tick of a running phase it dispatches `dev/warp` with `elapsed × (speed − 1)` ms, which pulls `timer.endsAt` closer. Everything downstream (remaining time, live siege, completion) works unchanged.
-- **Unlock & prefs:** `useDevMode()` keeps `{ unlocked, speed }` in localStorage key `studyrpg.dev` (separate from the save, so it never syncs to a future backend). It is unlocked when `import.meta.env.DEV`, or when the URL has `?dev` (`?dev=0` locks). Speed is forced to 1 while locked.
+- **Unlock & prefs:** `useDevMode()` keeps `{ unlocked, speed, skyHour }` in localStorage key `studyrpg.dev` (separate from the save, so it never syncs to a future backend). It is unlocked when `import.meta.env.DEV`, or when the URL has `?dev` (`?dev=0` locks). Speed is forced to 1 while locked.
 - **Snapshot:** one slot in `studyrpg.dev.snapshot` (`{ at, state }`), restored through `normalizeSave` + `load`.
 - **Not a security boundary:** the code ships in the production bundle and anyone can add `?dev`. That's fine for a local single-player game. With accounts (§9), dev ops must be rejected server-side (or the dev bundle excluded from production).
 
@@ -121,7 +131,8 @@ GameState {
   subjects:  Subject[]          // { id, name, color, minutes, sessions }
   selectedSubjectId: string | null
   settings:  { focusMinutes, shortBreakMinutes, longBreakMinutes, sessionsBeforeLongBreak,
-               autoStartBreaks, sound, notifications, scanlines }
+               autoStartBreaks, sound, notifications, scanlines,
+               skyMode: 'live'|'night'|'day', location: { lat, lon } | null /* rounded to 0.1° */ }
   inventory: string[]           // owned item ids
   equipped:  { weapon, armor, accessory: string | null }
   history:   SessionRecord[]    // { id, subjectId, subjectName, minutes, xp, gold, completedAt }, newest first
@@ -150,7 +161,7 @@ Static content (items, monsters, troops, upgrades) is **not** saved; saves refer
 | `recruit` / `buyUpgrade` / `buyRank` | unitId / upgradeId / rankId | blocked by `siegeLocked`; ranks also capped at `maxRank` |
 | `dismissReward` | | |
 | `load` | state | import / New Game / dev snapshot restore |
-| `dev` | dev: `DevOp` | developer tools, see §3.4 |
+| `dev` | dev: `DevOp` | developer tools, see §3.5 |
 
 ---
 
@@ -274,6 +285,7 @@ interface SaveStore {
 Ids are already UUIDs (subjects, history), so client-created rows can be inserted as-is. Static content stays in code; the DB stores ids only.
 
 ### 9.6 Things to decide at migration time
+- `settings.location` is personal data (rounded to ~10 km). Decide whether it syncs to the server or stays device-local.
 - Streak timezone: store the user's IANA timezone and compute days server-side.
 - Offline play: queue actions locally and replay, or require online for quests.
 - Whether `history` stays capped at 200 (DB can keep everything; the UI shows 50).

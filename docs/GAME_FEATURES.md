@@ -29,7 +29,7 @@ Nothing needs clicking while studying. The game is designed to run in the backgr
 | **Log** | Time per subject (Bestiary) and recent completed sessions (Adventure Log). Delete subjects here. |
 | **Config** | Hero name, timer lengths, options, save export/import, New Game. |
 
-The **HUD** (top bar) shows hero name, level and title, the XP bar, **gold**, **souls** (current, spendable) and the daily streak.
+The **HUD** (top bar) shows hero name, level and title, the XP bar, the **sky dial** (§9.1), **gold**, **souls** (current, spendable) and the daily streak.
 
 A red dot on the Quest tab means a quest is running while you're on another tab. The browser tab title shows the countdown (e.g. `24:58 Quest - StudyRPG`).
 
@@ -233,8 +233,26 @@ These maximums take months of study; early game sits around +10–30%.
 - **8-bit sound** (on): chiptune jingles for start, victory, level-up, rest over, purchases.
 - **Desktop notifications** (off): asks browser permission; notifies when a quest or rest ends.
 - **CRT scanlines** (on).
+- **Sky** (Live): see §9.1.
 - **Save data** lives in this browser only (localStorage). **Export** downloads a JSON backup; **Import** loads one; **New Game** wipes everything (with confirmation).
 - The log keeps the last 200 sessions (shows 50).
+
+### 9.1 Live sky (day/night)
+
+The background follows the player's **real local time**:
+
+| Phase | When | Look |
+|---|---|---|
+| Dawn | 40 min either side of sunrise | purple to peach sky, low sun, tinted clouds, fading stars |
+| Day | between dawn and dusk | blue sky, sun crossing the sky in an arc, drifting clouds, lighter castle |
+| Dusk | 40 min either side of sunset | purple to orange sky, setting sun, pink clouds |
+| Night | otherwise | starry night, the moon crossing from sunset to sunrise |
+
+- **The moon shows its real phase** (new, crescent, quarter, gibbous, full), lit from the correct side. Its path across the sky is simplified: it rises at sunset and sets at sunrise.
+- **Sunrise/sunset** are estimated from the browser's time zone (no permission needed). **Config → Sky → Use my location** asks the browser for your position for exact times. It's stored rounded to ~10 km, and **Forget location** removes it.
+- **Sky dial:** a mini sky in the HUD showing the sun or moon on its arc in the phase colours. Hover it for the phase, today's sunrise/sunset and the moon phase. On phones it's a strip above the gold/souls/streak numbers. It exists because the panels cover most of the background on smaller screens.
+- **Config → Sky** modes: **Live** (default), **Always night**, **Always day**. Live mode also shows today's sunrise, sunset and moon phase.
+- The sky refreshes every minute; the sun and moon glide between positions.
 
 ## 10. Developer tools (hidden)
 
@@ -246,6 +264,7 @@ A debug console for testing and previewing late-game content without waiting. No
 | Section | Tools |
 |---|---|
 | Time | **Clock speed** ×1 / ×10 / ×60 / ×300 / ×1000 for running quests and rests (the siege speeds up too). **Skip ahead** +1 / +5 / +15 min, **Finish now**. **Simulate study** 25m / 1h / 4h / 1 day / 1 week: an instant win paid out by the normal rules (rewards, siege, Victory dialog), using the selected subject. |
+| Sky | **Preview** the background at Live / Dawn / Morning / Noon / Dusk / Night / 3 AM (today's real sunrise/sunset are used for dawn/dusk). |
 | Hero | Gold +100 / +1K / +10K / +1M · XP +100 / +1K / +10K / +100K (normal level-ups) · set level 1–99 · streak 0 / 3 / 6 days · **All gear** into inventory. |
 | Siege | Souls +1K / +100K / +10M / +1B · +1 / +10 / +100 of every troop · **All upgrades** (also maxes every boon) · **Raze** 1 / 10 keeps (loot paid). |
 | Snapshot | **Save** the whole game state, **Restore** it later to undo experiments (one slot, stored in this browser). |
@@ -258,7 +277,7 @@ https://daneviser.github.io/StudyRPG/ (updates automatically after each push to 
 
 ## 12. Look & feel
 
-8/16-bit castle-at-night style: pixel fonts (Press Start 2P, VT323), hand-made pixel sprites, moon and castle silhouette, twinkling stars, chunky pixel borders, optional scanlines. Animations respect the OS "reduce motion" setting. Layout fits on one screen on most desktops. On phones the Quest screen stacks battle → timer → siege → subjects (subjects come first until you've picked one), the tabs form a 3×2 grid, and the battle scales to the screen so the hero and foe always fit side by side. It's tested down to 320 px wide.
+8/16-bit castle style with a live day/night sky (§9.1): pixel fonts (Press Start 2P, VT323), hand-made pixel sprites, moon and castle silhouette, twinkling stars, chunky pixel borders, optional scanlines. Animations respect the OS "reduce motion" setting. Layout fits on one screen on most desktops. On phones the Quest screen stacks battle → timer → siege → subjects (subjects come first until you've picked one), the tabs form a 3×2 grid, and the battle scales to the screen so the hero and foe always fit side by side. It's tested down to 320 px wide.
 
 ---
 

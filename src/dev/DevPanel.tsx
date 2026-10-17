@@ -4,6 +4,7 @@ import { formatNum, keepName } from '../game/idle'
 import { formatClock } from '../game/logic'
 import type { Action } from '../game/reducer'
 import { normalizeSave } from '../game/storage'
+import type { SkyState } from '../game/sky'
 import type { GameState } from '../game/types'
 import type { DevMode } from './useDevMode'
 
@@ -22,6 +23,13 @@ interface Props {
   dispatch: Dispatch<Action>
   dev: DevMode
   remainingMs: number
+  sky: SkyState
+}
+
+const hourOf = (ms: number | null, fallback: number) => {
+  if (ms === null) return fallback
+  const d = new Date(ms)
+  return d.getHours() + d.getMinutes() / 60
 }
 
 /** Compact button label: 1000 → 1K, 10000000 → 10M */
@@ -38,7 +46,7 @@ function readSnapshot(): { at: number; state: unknown } | null {
   }
 }
 
-export function DevPanel({ state, dispatch, dev, remainingMs }: Props) {
+export function DevPanel({ state, dispatch, dev, remainingMs, sky }: Props) {
   const [log, setLog] = useState('Ready.')
   const [level, setLevel] = useState(String(state.hero.level))
   const [snapshotAt, setSnapshotAt] = useState(() => readSnapshot()?.at ?? null)
@@ -116,6 +124,26 @@ export function DevPanel({ state, dispatch, dev, remainingMs }: Props) {
           ))}
         </Row>
         {!hasSubject && <p className="dev-note">Add a subject to simulate sessions.</p>}
+      </DevSection>
+
+      <DevSection title="Sky">
+        <Row label={`Preview (${sky.phase})`}>
+          {(
+            [
+              ['Live', null],
+              ['Dawn', hourOf(sky.sunrise, 6)],
+              ['Morning', 9],
+              ['Noon', 13],
+              ['Dusk', hourOf(sky.sunset, 18)],
+              ['Night', 23],
+              ['3 AM', 3],
+            ] as [string, number | null][]
+          ).map(([label, hour]) => (
+            <DevBtn key={label} on={dev.skyHour === hour} onClick={() => (dev.setSkyHour(hour), setLog(hour === null ? 'Sky follows the real time.' : `Sky pinned to ${label.toLowerCase()}.`))}>
+              {label}
+            </DevBtn>
+          ))}
+        </Row>
       </DevSection>
 
       <DevSection title="Hero">

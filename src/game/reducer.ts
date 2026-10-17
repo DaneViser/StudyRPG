@@ -46,6 +46,8 @@ export function createInitialState(): GameState {
     sound: true,
     notifications: false,
     scanlines: true,
+    skyMode: 'live',
+    location: null,
   }
   return {
     version: 1,
